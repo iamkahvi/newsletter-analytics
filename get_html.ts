@@ -5,7 +5,7 @@ import { readLines } from "https://deno.land/std@0.123.0/io/mod.ts";
 const args = Deno.args;
 if (args.length < 2) {
   console.error(
-    "Usage: deno run --allow-read --allow-write --allow-run monolith.ts <link_file> <output_dir>",
+    "Usage: deno run --allow-read --allow-write --allow-run get-html.ts <link_file> <output_dir>",
   );
   Deno.exit(1);
 }

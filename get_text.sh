@@ -19,9 +19,9 @@ while IFS= read -r link; do
     filename=$(echo "$link" | awk -F/ '{print $NF}' | sed 's/[^a-zA-Z0-9_-]/_/g')
 
     # Run the curl and htmlq command, saving the result to the file
-    curl --silent "$link" | htmlq --text "#main > div:nth-child(2) > div > div.container > div > div > article > div:nth-child(4) > div.available-content" > "$OUTPUT_FOLDER/$filename.txt"
+    curl --silent "$link" | htmlq "#main > div:nth-child(2) > div > div.container > div > div > article > div:nth-child(4) > div.available-content" > "$OUTPUT_FOLDER/$filename.html"
 
-    echo "Processed: $link -> $OUTPUT_FOLDER/$filename.txt"
+    echo "Processed: $link -> $OUTPUT_FOLDER/$filename.html"
 done < "$LINKS_FILE"
 
 echo "All links processed. Outputs saved to '$OUTPUT_FOLDER'."

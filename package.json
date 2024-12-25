@@ -1,0 +1,13 @@
+{
+  "name": "newsletter_backup",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Kahvi Patel <iamkahvi@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "turndown": "^7.2.0"
+  },
+  "devDependencies": {
+    "bun-types": "^1.1.42"
+  }
+}
