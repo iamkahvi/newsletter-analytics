@@ -1,0 +1,255 @@
+=== Newsletter Content Analysis ===
+
+📊 Corpus Statistics:
+Documents analyzed: 11
+Total words: 7031
+Unique words: 1984
+Average words per document: 639.18
+
+📈 Most Common Words:
+ 1. month: 38
+ 2. more: 32
+ 3. here: 25
+ 4. things: 18
+ 5. daylight: 15
+ 6. stuff: 15
+ 7. much: 14
+ 8. hours: 13
+ 9. same: 12
+10. love: 12
+11. something: 11
+12. next: 11
+13. trip: 11
+14. food: 11
+15. europe: 10
+16. went: 10
+17. while: 9
+18. victoria: 9
+19. actually: 9
+20. jerry: 9
+
+🔤 Most Common Phrases (Bigrams):
+ 1. "here s": 11 occurrences
+ 2. "don t": 9 occurrences
+ 3. "next month": 8 occurrences
+ 4. "didn t": 8 occurrences
+ 5. "here are": 7 occurrences
+ 6. "daylight savings": 7 occurrences
+ 7. "jerry seinfeld": 6 occurrences
+ 8. "doesn t": 5 occurrences
+ 9. "put together": 4 occurrences
+10. "law school": 4 occurrences
+11. "road trip": 4 occurrences
+12. "food vs": 4 occurrences
+13. "d rather": 4 occurrences
+14. "iranian oil": 4 occurrences
+15. "hasn t": 3 occurrences
+
+📑 Important Terms by Document (TF-IDF):
+
+september-2024.md:
+to (2.7390), surprisingly (2.7047), editions (2.7047), talk (2.7047), enough (2.2993)
+
+july-2024.md:
+the (43.0000), i (33.7806), to (23.7377), a (18.2598), that (15.0000)
+
+april-2024.md:
+i (28.3026), the (26.0000), a (24.6507), truck (13.5237), it (13.0000)
+
+june-2024.md:
+the (22.0000), to (17.3468), i (13.6948), it (12.0000), and (9.1299)
+
+october-2024-extended.md:
+the (33.0000), i (28.3026), a (25.5637), of (23.7377), to (23.7377)
+
+february-2024.md:
+the (26.0000), i (17.3468), of (13.6948), and (13.6948), in (11.8689)
+
+august-2024.md:
+the (23.0000), to (22.8247), i (19.1728), a (16.4338), and (15.5208)
+
+november-2024.md:
+the (33.0000), standard (24.3427), time (22.0000), shift (18.9332), i (17.3468)
+
+january-2024.md:
+the (26.0000), i (23.7377), it (14.0000), my (10.9531), training (10.8190)
+
+march-2024.md:
+the (38.0000), a (21.9117), iran (21.6380), and (19.1728), oil (18.9332)
+
+may-2024.md:
+i (36.5195), the (24.0000), jerry (18.3943), a (18.2598), my (17.5250)
+
+📚 Readability Metrics:
+september-2024.md:
+  - Grade Level: 21.1
+  - Average Sentence Length: 9.6 words
+july-2024.md:
+  - Grade Level: 288.3
+  - Average Sentence Length: 9.7 words
+april-2024.md:
+  - Grade Level: 230.7
+  - Average Sentence Length: 9.6 words
+june-2024.md:
+  - Grade Level: 187.3
+  - Average Sentence Length: 7.7 words
+october-2024-extended.md:
+  - Grade Level: 397.1
+  - Average Sentence Length: 8.9 words
+february-2024.md:
+  - Grade Level: 220.2
+  - Average Sentence Length: 9.4 words
+august-2024.md:
+  - Grade Level: 292.6
+  - Average Sentence Length: 7.5 words
+november-2024.md:
+  - Grade Level: 273.5
+  - Average Sentence Length: 11.0 words
+january-2024.md:
+  - Grade Level: 241.6
+  - Average Sentence Length: 8.3 words
+march-2024.md:
+  - Grade Level: 300.6
+  - Average Sentence Length: 9.2 words
+may-2024.md:
+  - Grade Level: 256.6
+  - Average Sentence Length: 9.8 words
+
+💭 Sentiment Analysis:
+april-2024.md:
+  - Raw Score: -0.04
+  - Normalized Score: -0.00
+august-2024.md:
+  - Raw Score: -0.03
+  - Normalized Score: -0.00
+february-2024.md:
+  - Raw Score: -0.09
+  - Normalized Score: -0.00
+january-2024.md:
+  - Raw Score: 0.01
+  - Normalized Score: 0.00
+july-2024.md:
+  - Raw Score: -0.03
+  - Normalized Score: -0.00
+june-2024.md:
+  - Raw Score: -0.04
+  - Normalized Score: -0.00
+march-2024.md:
+  - Raw Score: -0.07
+  - Normalized Score: -0.00
+may-2024.md:
+  - Raw Score: -0.11
+  - Normalized Score: -0.00
+november-2024.md:
+  - Raw Score: -0.00
+  - Normalized Score: -0.00
+october-2024-extended.md:
+  - Raw Score: -0.04
+  - Normalized Score: -0.00
+september-2024.md:
+  - Raw Score: -0.02
+  - Normalized Score: -0.00
+
+🔄 Similar Terms Analysis:
+
+Similar to "language":
+  - language
+
+Similar to "model":
+  - made
+  - more
+  - modes
+  - move
+  - montreal
+  - melody
+  - modulation
+  - model
+  - mood
+  - modules
+
+Similar to "data":
+  - at
+  - data
+  - dating
+  - date
+
+Similar to "learning":
+  - learn
+  - reasoning
+  - landing
+  - lebanon
+  - ranking
+  - learning
+  - learned
+  - leading
+  - leaving
+
+🌱 Common Word Stems:
+
+📈 Content Evolution:
+
+Time Period 1:
+  - Documents: april-2024.md, august-2024.md, february-2024.md
+  - Sentiment: -0.00
+  - Avg Words: 647
+
+Time Period 2:
+  - Documents: january-2024.md, july-2024.md, june-2024.md
+  - Sentiment: -0.00
+  - Avg Words: 619
+
+Time Period 3:
+  - Documents: march-2024.md, may-2024.md, november-2024.md
+  - Sentiment: -0.00
+  - Avg Words: 714
+
+Time Period 4:
+  - Documents: october-2024-extended.md, september-2024.md
+  - Sentiment: -0.00
+  - Avg Words: 545
+
+📚 Vocabulary Complexity:
+
+april-2024.md:
+  - Average Word Length: 4.17 characters
+  - Vocabulary Diversity: 50.0%
+
+august-2024.md:
+  - Average Word Length: 4.43 characters
+  - Vocabulary Diversity: 54.0%
+
+february-2024.md:
+  - Average Word Length: 4.40 characters
+  - Vocabulary Diversity: 51.3%
+
+january-2024.md:
+  - Average Word Length: 4.36 characters
+  - Vocabulary Diversity: 52.8%
+
+july-2024.md:
+  - Average Word Length: 4.08 characters
+  - Vocabulary Diversity: 45.3%
+
+june-2024.md:
+  - Average Word Length: 4.40 characters
+  - Vocabulary Diversity: 58.4%
+
+march-2024.md:
+  - Average Word Length: 4.61 characters
+  - Vocabulary Diversity: 51.2%
+
+may-2024.md:
+  - Average Word Length: 4.36 characters
+  - Vocabulary Diversity: 51.7%
+
+november-2024.md:
+  - Average Word Length: 4.22 characters
+  - Vocabulary Diversity: 45.8%
+
+october-2024-extended.md:
+  - Average Word Length: 4.31 characters
+  - Vocabulary Diversity: 47.9%
+
+september-2024.md:
+  - Average Word Length: 4.35 characters
+  - Vocabulary Diversity: 85.4%

@@ -1,5 +1,5 @@
 // analyze_markdown.ts
-
+import nlp from "https://esm.sh/compromise@14.10.1";
 import { walk } from "https://deno.land/std/fs/mod.ts";
 
 interface PostMetrics {
@@ -64,193 +64,60 @@ function extractHeadings(content: string): Heading[] {
 }
 
 function extractKeywords(content: string): Map<string, number> {
-  // Remove markdown syntax, links, and common punctuation
+  // Remove markdown syntax and clean the text
   const cleanText = content
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // Remove markdown links but keep text
     .replace(/[#*`_]/g, "") // Remove markdown formatting
-    .replace(/[.,!?;:'"()]/g, "") // Remove punctuation
-    .toLowerCase();
+    .replace(/[.,!?;:'"()]/g, " "); // Replace punctuation with spaces
 
-  // Enhanced stop words list
-  const stopWords = new Set([
-    // Original stop words...
-    "the",
-    "be",
-    "to",
-    "of",
-    "and",
-    "a",
-    "in",
-    "that",
-    "have",
-    "i",
-    "it",
-    "for",
-    "not",
-    "on",
-    "with",
-    "he",
-    "as",
-    "you",
-    "do",
-    "at",
-    "this",
-    "but",
-    "his",
-    "by",
-    "from",
-    "they",
-    "we",
-    "say",
-    "her",
-    "she",
-    "or",
-    "an",
-    "will",
-    "my",
-    "one",
-    "all",
-    "would",
-    "there",
-    "their",
-    "what",
-    "so",
-    "up",
-    "out",
-    "if",
-    "about",
-    "who",
-    "get",
-    "which",
-    "go",
-    "me",
-    "when",
-    "make",
-    "can",
-    "like",
-    "time",
-    "no",
-    "just",
-    "him",
-    "know",
-    "take",
-    "people",
-    "into",
-    "year",
-    "your",
-    "good",
-    "some",
-    "could",
-    "them",
-    "see",
-    "other",
-    "than",
-    "then",
-    "now",
-    "look",
-    "only",
-    "come",
-    "its",
-    "over",
-    "think",
-    "also",
-    "back",
-    "after",
-    "use",
-    "two",
-    "how",
-    "our",
-    "work",
-    "first",
-    "well",
-    "way",
-    "even",
-    "new",
-    "want",
-    "because",
-    "any",
-    "these",
-    "give",
-    "day",
-    "most",
-    "us",
+  // Use compromise to identify nouns
+  const doc = nlp(cleanText);
+  const nouns = doc.nouns().out("array");
 
-    // Additional stop words based on your content
-    "it's",
-    "that's",
-    "i've",
-    "here's",
-    "don't",
-    "i'm",
-    "there's",
-    "won't",
-    "can't",
-    "didn't",
-    "wouldn't",
-    "couldn't",
-    "shouldn't",
-    "more",
-    "been",
-    "here",
-    "very",
-    "much",
-    "were",
-    "next",
-    "something",
-    "things",
-    "same",
-    "month",
+  // Common technical/newsletter specific terms to exclude
+  const excludeWords = new Set([
     "newsletter",
-    "being",
-    "really",
-    "going",
-    "getting",
-    "doing",
-    "made",
-    "still",
-    "every",
-    "another",
-    "many",
-    "while",
+    "month",
+    "thing",
+    "something",
+    "anything",
+    "nothing",
+    "way",
+    "time",
+    "day",
+    "week",
+    "year",
+    "today",
+    "tomorrow",
+    "yesterday",
+    "lot",
+    "bit",
+    "piece",
+    "everyone",
+    "somebody",
+    "anyone",
+    "nobody",
+    "everything",
+    "here",
+    "there",
     "where",
-    "through",
-    "before",
-    "after",
-    "since",
-    "until",
-    "unless",
-    "though",
-    "although",
-    "rather",
-    "quite",
-    "such",
-    "within",
-    "without",
-    "during",
-    "among",
-    "those",
-    "they're",
-    "we're",
-    "you're",
-    "what's",
-    "who's",
-    "let's",
-    "where's",
-    "might",
-    "shall",
+    "anywhere",
+    "nowhere",
   ]);
 
-  // Split into words and count frequencies
-  const words = cleanText.split(/\s+/);
+  // Count noun frequencies
   const frequencies = new Map<string, number>();
-  words.forEach((word) => {
-    if (word.length > 3) {
-      frequencies.set(word, (frequencies.get(word) || 0) + 1);
+  nouns.forEach((noun) => {
+    noun = noun.toLowerCase().trim();
+    if (noun.length > 3) {
+      frequencies.set(noun, (frequencies.get(noun) || 0) + 1);
     }
   });
 
   return frequencies;
 }
+
+// The rest of the script remains the same...
 
 async function analyzeNewsletter(
   directoryPath: string

@@ -1,15 +1,76 @@
 // Import required modules
 import TurndownService from "turndown";
+import { parseArgs } from "@std/cli/parse-args";
+
+// Usage: deno run --allow-run process_html_to_markdown.ts --mode link https://example.com
+// Usage: deno run --allow-run process_html_to_markdown.ts --mode list links.txt
+
+const Mode = {
+  LIST: "list",
+  LINK: "link",
+} as const;
 
 // Get CLI arguments
-const args = Deno.args;
-// if (args.length < 1) {
-//   console.error(
-//     "Usage: deno run --allow-read --allow-write --allow-run process_html_to_markdown.ts <input_dir> <output_dir>"
-//   );
-//   Deno.exit(1);
-// }
+const args = parseArgs(Deno.args);
 
+const { mode } = args;
+
+if (![Mode.LIST, Mode.LINK].includes(mode)) {
+  console.log("Invalid mode");
+  Deno.exit(1);
+}
+
+switch (mode) {
+  case Mode.LIST: {
+    console.log("List mode");
+    if (args._.length < 1 || typeof args._[0] !== "string") {
+      console.error(
+        "Usage: deno run --allow-read process_html_to_markdown.ts --mode list <file>"
+      );
+      Deno.exit(1);
+    }
+    const lines = getLinesFromFile(args._[0]);
+    lines.forEach((line) => {
+      // validate link is a URL
+      if (!validateUrl(line)) {
+        console.error(`Invalid URL: ${line}`);
+        return;
+      }
+      processUrlToMarkdown(line).then((md) => {
+        console.log(md);
+      });
+    });
+    break;
+  }
+  case Mode.LINK: {
+    console.log("Link mode");
+    if (args._.length < 1 || typeof args._[0] !== "string") {
+      console.error(
+        "Usage: deno run --allow-run process_html_to_markdown.ts --mode link <link>"
+      );
+      Deno.exit(1);
+    }
+
+    // validate link is a URL
+    if (!validateUrl(args._[0])) {
+      console.error(`Invalid URL: ${args._[0]}`);
+      Deno.exit(1);
+    }
+
+    processUrlToMarkdown(args._[0]).then((md) => {
+      console.log(md);
+    });
+    break;
+  }
+  default:
+    console.log("Invalid mode");
+    Deno.exit(1);
+}
+
+function getLinesFromFile(filePath: string): string[] {
+  const file = Deno.readTextFileSync(filePath);
+  return file.split("\n").map((line) => line.trim());
+}
 
 const turndownService = new TurndownService();
 
@@ -37,14 +98,23 @@ async function selectHtml(html: string, selector: string) {
   return new TextDecoder().decode(htmlqOutput.stdout);
 }
 
-const inputUrl = args[0];
+async function processUrlToMarkdown(url: string): Promise<string> {
+  const html = await getHtml(url);
 
-const html = await getHtml(inputUrl);
+  const selector =
+    "#main > div:nth-child(2) > div > div.container > div > div > article > div:nth-child(4) > div.available-content";
+  const selectedHtml = await selectHtml(html, selector);
 
-const selector =
-  "#main > div:nth-child(2) > div > div.container > div > div > article > div:nth-child(4) > div.available-content";
-const selectedHtml = await selectHtml(html, selector);
+  const md = turndownService.turndown(selectedHtml);
 
-const md = turndownService.turndown(selectedHtml);
+  return md;
+}
 
-console.log(md);
+function validateUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
