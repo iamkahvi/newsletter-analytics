@@ -1,0 +1,100 @@
+i: 216
+it: 81
+it's: 45
+you: 44
+i'm: 30
+>: 28
+i've: 27
+me: 27
+they: 21
+we: 19
+it.: 18
+he: 16
+here's: 13
+i'd: 13
+here: 12
+something: 10
+things: 9
+next month!: 8
+you're: 8
+all: 8
+end -----: 6
+this newsletter: 6
+###: 5
+this month: 5
+people: 5
+we're: 5
+them: 5
+he's: 5
+my job: 5
+time: 5
+month.: 5
+ashley: 5
+work: 4
+you'll: 4
+the idea: 4
+a car: 4
+the more: 4
+everything: 4
+a while: 4
+mosaddegh: 4
+anyone: 3
+vienna: 3
+why: 3
+canada: 3
+backflip: 3
+december: 3
+a while.: 3
+last year: 3
+june: 3
+they're: 3
+reading!: 3
+me.: 3
+the same time: 3
+the internet: 3
+more time: 3
+victoria: 3
+misc ------: 3
+this month.: 3
+it!: 3
+toronto: 3
+daylight savings: 3
+the british: 3
+our clocks: 3
+standard time: 3
+vancouver: 3
+victoria.: 2
+home: 2
+the summer: 2
+town.: 2
+month: 2
+this song: 2
+a week: 2
+coldplay: 2
+everyone: 2
+the streets: 2
+the city: 2
+the way: 2
+_and_: 2
+europe: 2
+this book: 2
+perspective.: 2
+november: 2
+boxes: 2
+this format: 2
+the time: 2
+my life: 2
+year: 2
+everybody: 2
+the people: 2
+the associates: 2
+constant change: 2
+myself: 2
+the time.: 2
+the medal of freedom: 2
+three weeks: 2
+him.: 2
+here.: 2
+the sun: 2
+a great month: 2
+my: 2

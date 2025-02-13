@@ -107,7 +107,7 @@ function extractKeywords(content: string): Map<string, number> {
 
   // Count noun frequencies
   const frequencies = new Map<string, number>();
-  nouns.forEach((noun) => {
+  nouns.forEach((noun: string) => {
     noun = noun.toLowerCase().trim();
     if (noun.length > 3) {
       frequencies.set(noun, (frequencies.get(noun) || 0) + 1);
@@ -142,17 +142,29 @@ async function analyzeNewsletter(
       specialType = entry.name.replace(".md", "");
     }
 
+    const regexMdLinks = /\[([^\[]+)\](\(.*\))/gm;
+    const regexMdImages = /!\[(.*)\]\((.+)\)/gm;
+
+    const cleanContent = content
+      .trim()
+      .replace(regexMdLinks, "$1")
+      .replace(regexMdImages, "");
+
+    const doc = nlp(cleanContent);
+
+    // console.log(doc.terms().out("freq"));
+
     metrics.push({
       filename: entry.name,
       date: date || new Date(0),
-      wordCount: content.trim().split(/\s+/).length,
-      characterCount: content.length,
+      wordCount: doc.wordCount(),
+      characterCount: doc.length,
       paragraphCount: content.split("\n\n").length,
       specialType: date ? undefined : specialType,
       links: extractLinks(content),
       imageCount: countImages(content),
       headings: extractHeadings(content),
-      keywords: extractKeywords(content),
+      keywords: extractKeywords(cleanContent),
     });
   }
 

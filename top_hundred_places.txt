@@ -1,0 +1,35 @@
+europe: 9
+victoria: 4
+canada: 4
+toronto: 4
+iran.: 4
+vancouver: 4
+vienna: 3
+iran: 3
+st: 2
+israel: 2
+montreal: 1
+kingston.: 1
+this place: 1
+vienna.: 1
+prater park.: 1
+vienna/europe: 1
+munich: 1
+mexico: 1
+house of kennedy_.: 1
+white house: 1
+silicon valley: 1
+victoria —: 1
+butchart gardens.: 1
+coombs country: 1
+galiano island.: 1
+iran's: 1
+country. but: 1
+standard time st,: 1
+victoria.: 1
+sweden: 1
+thailand: 1
+america's: 1
+palestine: 1
+lebanon.: 1
+gaza: 1
