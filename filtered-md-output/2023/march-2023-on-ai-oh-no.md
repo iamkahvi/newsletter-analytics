@@ -35,17 +35,17 @@ This means: The stuff people were typing closely resembled the instructions that
 
     section .data
         hello db 'hello world', 0Ah
-    
+
     section .text
         global _start
-    
+
     _start:
         mov eax, 4
         mov ebx, 1
         lea ecx, [hello]
         mov edx, 13
         int 0x80
-    
+
         mov eax, 1
         xor ebx, ebx
         int 0x80
@@ -75,17 +75,17 @@ This transition will feel pretty familiar to anyone who’s studied computer sci
 
     section .data
         hello db 'hello world', 0Ah
-    
+
     section .text
         global _start
-    
+
     _start:
         mov eax, 4
         mov ebx, 1
         lea ecx, [hello]
         mov edx, 13
         int 0x80
-    
+
         mov eax, 1
         xor ebx, ebx
         int 0x80
@@ -102,13 +102,7 @@ It’s important to emphasize here that in order to write valid Python, you are 
 
 If you’ve ever programmed, you’ll be very familiar with what happens when you _break_ the rules. Miss even one quotation or parentheses or character and the interpreter/compiler will get mad at you:
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa857dfe8-cb80-4445-8135-0d1dfa289c85_1308x62.png)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa857dfe8-cb80-4445-8135-0d1dfa289c85_1308x62.png)
 
 Conversely, if you follow the rules, the translator can interpret and compile your Python “relatively” easily.
 
@@ -152,11 +146,11 @@ Lets take our “hello world” example from way above. In Python, our command i
 In English, you could communicate this by saying:
 
 > “print the text hello world”
-> 
+>
 > “print the words world and hello in alphabetical order separated by a space”
-> 
+>
 > “print a greeting to someone named world”
-> 
+>
 > “print bonjour monde translated in english”
 
 and so on…
@@ -166,13 +160,13 @@ There are (arguably) infinite possible prompts to get our desired result! I mean
 To drive home the point, if it was possible for computers to manually interpret English _well:_
 
 *   Our \[2023\] voice assistants would be so much better (@siri)
-    
+
 *   We would be able to learn new languages more easily
-    
+
 *   We would probably have a better understanding of the brain
-    
+
 *   The field of linguistics might not exist
-    
+
 
 Okay, so how did we (OpenAI) achieve this? How does ChatGPT understand English so well?
 

@@ -38,47 +38,35 @@ the rest
 Here’s a list of things I did this month:
 
 *   helped my sister move in vancouver
-    
-*   ripped my pinkie open
-    
-    *   why do I like [climbing](https://www.youtube.com/shorts/SZlo4RRtchw)?
-        
-*   did a lot of biking
-    
-    *   riding on dallas with the cruise ships
-        
-    *   and on a [100km](https://www.strava.com/activities/9863896369) [bike](https://www.strava.com/activities/9863898505) [ride](https://www.strava.com/activities/9863885870)
-        
-        [
-        
-        ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd4b3a0d3-b85d-4113-af27-f1f56f98e2b2_2474x1172.png)
-        
-        
-        
-        ](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd4b3a0d3-b85d-4113-af27-f1f56f98e2b2_2474x1172.png)
-        
-*   started swing dancing lessons w ashley
-    
-*   did some [knitting](https://www.facebook.com/events/190977054008008/190977084008005/)
-    
-    *   does anyone recognize this stitch?
-        
 
-[
+*   ripped my pinkie open
+
+    *   why do I like [climbing](https://www.youtube.com/shorts/SZlo4RRtchw)?
+
+*   did a lot of biking
+
+    *   riding on dallas with the cruise ships
+
+    *   and on a [100km](https://www.strava.com/activities/9863896369) [bike](https://www.strava.com/activities/9863898505) [ride](https://www.strava.com/activities/9863885870)
+
+        ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd4b3a0d3-b85d-4113-af27-f1f56f98e2b2_2474x1172.png)
+
+*   started swing dancing lessons w ashley
+
+*   did some [knitting](https://www.facebook.com/events/190977054008008/190977084008005/)
+
+    *   does anyone recognize this stitch?
+
 
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4ad5c1f2-a713-4ec4-ab83-4e86a0338d30_3024x4032.jpeg)
 
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4ad5c1f2-a713-4ec4-ab83-4e86a0338d30_3024x4032.jpeg)
-
 *   saw that movie [bottoms](https://www.youtube.com/watch?v=vH5NAahf76s) (it was great)
-    
+
 *   started the fall ultimate season
-    
+
 *   did a [beerfest bouncy castle race](https://youtu.be/kISf6FMB4N0) and lost
-    
+
 *   witnessed this sunset after a storm
-    
+
 
 Aaaand that’s all I have this month. See you in November!

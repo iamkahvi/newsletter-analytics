@@ -29,11 +29,11 @@ On my flight back, I flew from Toronto to Calgary to Edmonton and finally to Vic
 One positive though, I got to sit next to a WestJet pilot on my flight from Calgary to Edmonton. I proceeded to badger him with questions for the entire flight. Here’s what I learned:
 
 *   The plane engines that hang under the wings are interchangeable. When a new engine comes out, they just bolt it in. So your plane can be old as hell but have brand new engines.
-    
+
 *   Boeing and Airbus have diametrically opposing views on flight controls. Boeing is all analogue; they put the pilot in charge. Airbus is all software and auto-pilot. Apparently pilots prefer the Boeings (WestJet is all Boeings).
-    
+
 *   Putting your phone in airplane mode is apparently irrelevant. This pilot was trying to Google something before, during and after takeoff.
-    
+
 
 ### a pilot's job
 
@@ -76,25 +76,13 @@ Does this give more validity to [David Goggins](https://www.instagram.com/davidg
 
 Here is a picture of me and Elvis running.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2ae486c7-96df-4584-8a21-3e87c2c88d9f_2656x3984.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2ae486c7-96df-4584-8a21-3e87c2c88d9f_2656x3984.jpeg)
 
 My goal is to make it under 50 minutes next time.
 
 ### I made this loaf of bread
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ffaeb5025-6c43-4746-b9aa-5abdb0c8ddd8.heic)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ffaeb5025-6c43-4746-b9aa-5abdb0c8ddd8.heic)
 
 Anyways, see you next month. Also [AI part 2](https://www.newsletter.kahvipatel.com/p/on-ai-part-2) is coming soon. I have not forgotten about it. It’s just very complicated (who knew?).
 
@@ -104,15 +92,15 @@ fun links
 -----------
 
 *   this [ableton music lesson](https://learningmusic.ableton.com/)
-    
+
 *   this online [synth radio station](https://rekt.network/milkdrop?station=chillsynth)
-    
+
 *   about the [hollywood strike](https://www.hamiltonnolan.com/p/the-coral-reef-of-humanity-encircling)
-    
+
 *   this [beautiful pocket recorder](https://teenage.engineering/products/tp-7)
-    
+
 *   [Hanlon’s razor](https://en.wikipedia.org/wiki/Hanlon%27s_razor)
-    
+
 *   the google io [keynote recap](https://youtu.be/XL1w7f5o80A?t=464)
-    
+
 *   [the chair](https://www.urbandictionary.com/define.php?term=The+chair)

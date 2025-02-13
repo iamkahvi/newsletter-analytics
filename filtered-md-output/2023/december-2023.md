@@ -30,13 +30,7 @@ This email marks the one year anniversary of this newsletter! I thought it made 
 
 I haven’t stuck to the length limit. In my [initial post](https://www.newsletter.kahvipatel.com/p/what-why-how), I said there would be a maximum of 500 words per post. I went over that limit frequently; my average was about 750. Here’s a chart.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fce1af873-b453-461c-94b8-66ead756749b_600x371.png)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fce1af873-b453-461c-94b8-66ead756749b_600x371.png)
 
 It’s kind of funny that I thought I could limit myself to 500 words. I regularly have too many thoughts in my head and not enough time to refine them. It’s like the Mark Twain quote:
 
@@ -48,13 +42,7 @@ My writing here should be concise, short and clear (as prescribed in [this book]
 
 I’ve also regularly been late. My vague promise at the beginning was to deliver “on the first Sunday of each month” which would fall on the 7th _at the latest_. Here’s a chart which day of the month each post was actually delivered:
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1c412579-7acd-40a5-9ff0-479ab833d9fa_600x371.png)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1c412579-7acd-40a5-9ff0-479ab833d9fa_600x371.png)
 
 I didn’t post on the first Sunday _once._
 
@@ -96,13 +84,7 @@ ginger bread oat chai
 
 I’d like to use this section of the newsletter to commemorate the gingerbread oat chai from Starbucks. Although it only existed for a few months over the holiday period, it was the best version of a chai latte I’ve ever tasted. I pray it returns next season.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F25bd1d17-be48-4100-a375-46a2dd479308.heic)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F25bd1d17-be48-4100-a375-46a2dd479308.heic)
 
 technical note
 

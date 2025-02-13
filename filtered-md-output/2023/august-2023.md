@@ -8,13 +8,13 @@ sailing
 Recently, I've been obsessed with the idea of sailing. I can’t figure out exactly why. Contributing factors include:
 
 *   my early determination to live by an ocean
-    
+
 *   [day trips on a family friends sailboat](https://youtu.be/yli2zN2mV4M?si=InqpSP3VrS1_HllU)
-    
+
 *   frequent viewings of Pirates of the Caribbean movies
-    
+
 *   hours spent watching [this](https://www.youtube.com/watch?v=3raTwKl0fWU) [YouTube](https://www.youtube.com/watch?v=mY66IELCZzw) [channel](https://www.youtube.com/watch?v=nJ-MBzA36NA) and [this one](https://www.youtube.com/watch?v=e_B0FNiR6ms) more recently
-    
+
 
 So anyway, I signed up for sailing lessons this month. The classes were 6-9PM on Mondays and Wednesdays for 4 weeks. We were sailing in [420s](https://en.wikipedia.org/wiki/420_\(dinghy\)) which [can go very fast](https://www.instagram.com/reel/CpS8wAxjBD8) (when sailed properly).
 
@@ -44,13 +44,7 @@ And you can see the horizon. We rarely missed a sunset.
 
 I was lucky with my sailing group. Everyone was nice, especially the instructors. It made sailing with someone else in the boat a pleasure and not a chore. Here’s me with my buddy Sam.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4f3e556a-a0ab-45ce-b383-2fb2c6b65ee0_4032x3024.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4f3e556a-a0ab-45ce-b383-2fb2c6b65ee0_4032x3024.jpeg)
 
 And here’s a little time-lapse on a quiet day:
 
@@ -70,13 +64,7 @@ bike update
 
 After complaining about aesthetics for half of last month's newsletter, I bought the 'ugly' one.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F09053297-8e26-4b3c-9ebf-5a6680c914ee_4032x3024.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F09053297-8e26-4b3c-9ebf-5a6680c914ee_4032x3024.jpeg)
 
 In my defence, I tried three vintage bikes and they all felt stiff and uncomfortable.
 
@@ -86,13 +74,7 @@ It’s not really ugly. I love it. She’s beautiful. Although I did install the
 
 I’m now finding any excuse I can to ride around. Great purchase. Thank you [Recyclistas](https://recyclistas.ca/)!
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Febc05d75-25ae-438b-96e8-270b6c348414_4032x3024.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Febc05d75-25ae-438b-96e8-270b6c348414_4032x3024.jpeg)
 
 percentages and progestin
 
@@ -144,23 +126,16 @@ links
 -------
 
 *   new [notes app/system](https://capacities.io/) I’m trying to use
-    
+
 *   new [js runtime](https://bun.sh/) I’m trying to use
-    
+
 *   a [good doc](https://www.youtube.com/watch?v=KFYhrc0AnVw)
-    
+
 *   a [good song](https://open.spotify.com/track/51Zo4yemKVPqpmRxOZfYiX?si=4e8410dc2ba34463)
-    
+
 *   this [xkcd](https://xkcd.com/435/)
-    
-    [
-    
     ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff71a8754-8233-4b01-84aa-5dffee62402c_740x308.png)
-    
-    
-    
-    ](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff71a8754-8233-4b01-84aa-5dffee62402c_740x308.png)
-    
+
 
 end
 

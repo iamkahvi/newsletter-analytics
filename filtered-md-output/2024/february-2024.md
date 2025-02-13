@@ -49,13 +49,7 @@ the bachelor
 
 We started watching the Bachelor this month. I’m convinced that this show is actually just a cult disguised as a reality television show.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc9e07784-ba26-4555-bb1f-d3682c72440c_1008x822.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc9e07784-ba26-4555-bb1f-d3682c72440c_1008x822.jpeg)
 
 This season’s Bachelor, Joey, is so sincere and honest that I can’t help but trust that he actually believes in the concept of the show:
 
@@ -75,17 +69,17 @@ links
 -------
 
 *   i love [this song](https://open.spotify.com/track/7BgYrc6oCm1Mqhn1A63jJc?si=8bc0d353b02347c2)
-    
+
 *   and [this one](https://open.spotify.com/track/5ls4FQAoSlAFPFnaYpeyhn?si=d580e6299a7a4342) 🥵
-    
+
     [
-    
+
     ![Image](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe5ff9ae3-869a-4697-8542-80f0ccaf5958_1200x1115.jpeg "Image")
-    
-    
-    
+
+
+
     ](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe5ff9ae3-869a-4697-8542-80f0ccaf5958_1200x1115.jpeg)
-    
+
 
 the end
 

@@ -8,21 +8,15 @@ changing seasons
 I’ve realized that a perpetual topic in this newsletter is me complaining/talking about the weather. I think that’s because:
 
 *   weather is hard to predict
-    
+
 *   my spirits follow the changing weather quite closely
-    
+
 
 When it’s sunny and light out until 8:30PM, I love Victoria. I can finish work, go outside, and bask under the bright blue sky. Then I can return home for a snack or dinner and go out again to see the sunset. Wonderful.
 
 I’ve noticed that April in particular encompasses a _drastic_ change in daylight hours. Here’s a chart showing the change in daylight hours:
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Faaeefa41-b62c-4443-8f53-70a398885984_1286x966.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Faaeefa41-b62c-4443-8f53-70a398885984_1286x966.jpeg)
 
 You’ll notice that the month of April is when the blue line (hours of daylight) is at its steepest; hence the noticeable increase. I love it.
 
@@ -33,13 +27,7 @@ trucks
 
 Anyone who knows me knows that I own a 2008 Honda Civic. It’s a manual that I bought in the summer of 2019 to zip around town.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fbe707c97-030f-42c8-bdfc-520c6a40f07a_4032x3024.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fbe707c97-030f-42c8-bdfc-520c6a40f07a_4032x3024.jpeg)
 
 Recently, I got the idea in my head that I wanted to replace the Civic with something more _adventurous_.
 
@@ -86,25 +74,19 @@ end
 A few items to end this newsletter:
 
 *   new Starbucks order - iced oat chai latte w/ cinnamon dolce syrup
-    
+
 *   [This Jerry Seinfeld video](https://youtu.be/YL2sr99Sv18)
-    
+
 
 *   [This song](https://open.spotify.com/track/259K0DlR586fupbKcwQNBW?si=cb9e2c1857394f56)
-    
-*   [Kahuna](https://mykahuna.ca/) in Victoria has a delicious coconut cream pie
-    
-*   I watched [This Place Rules](https://en.wikipedia.org/wiki/This_Place_Rules); it was both hilarious and insightful
-    
-*   I was staying in a hotel in Dorval and the blinds looked like this. Can anyone explain this pattern?
-    
 
-[
+*   [Kahuna](https://mykahuna.ca/) in Victoria has a delicious coconut cream pie
+
+*   I watched [This Place Rules](https://en.wikipedia.org/wiki/This_Place_Rules); it was both hilarious and insightful
+
+*   I was staying in a hotel in Dorval and the blinds looked like this. Can anyone explain this pattern?
+
 
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd32fee06-b453-4902-b110-c6e59a7b424f_2761x3674.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd32fee06-b453-4902-b110-c6e59a7b424f_2761x3674.jpeg)
 
 See you next month!

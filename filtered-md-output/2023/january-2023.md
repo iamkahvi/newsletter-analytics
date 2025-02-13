@@ -23,33 +23,21 @@ I spent some time this month trying to setup my [Raspberry Pi](https://www.canak
 In semi-chronological order, I
 
 *   setup a DNS server with [Adguard](https://adguard.com/en/adguard-home/overview.html) on the pi
-    
+
 *   setup nginx on the pi
-    
+
 *   setup custom DNS rewrites (like [kahvi.server.com](http://kahvi.server.com)) on Adguard
-    
+
 *   pointed nginx to the DNS rewrites
-    
+
 
 All this means is that if you try and go to [kahvi.server.com](http://kahvi.server.com) on the normal internet, you’ll get something like this:
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4816fefe-1c0a-47a1-9469-098742e7a82b_1994x1972.png)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4816fefe-1c0a-47a1-9469-098742e7a82b_1994x1972.png)
 
 _But_ if you come over and connect to our home network, you’ll see this when you go to [kahvi.server.com](http://kahvi.server.com):
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F561474f9-c6f8-4dfd-afb1-a3503fae22f9_1994x1972.png)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F561474f9-c6f8-4dfd-afb1-a3503fae22f9_1994x1972.png)
 
 It only exists on our local network! It’s like our apartment’s secret little website.
 
@@ -80,22 +68,16 @@ Links
 -------
 
 *   this [cool game](https://www.chronophoto.app/game.html)
-    
+
 *   this [song](https://www.youtube.com/watch?v=SSrsj1rBE8Q) and this [song](https://youtu.be/JKEItVNlYXI) and this [song](https://www.youtube.com/watch?v=l4UkYBr1NnA)
-    
+
 *   this helpful decision flow diagram (thanks [wealthsimple](https://www.wealthsimple.com/en-ca/magazine/rrsp-vs-tfsa-tax-canada))
-    
-    [
-    
+
     ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2a596cde-690a-4441-a40d-bae3c0be0783_1490x4070.png)
-    
-    
-    
-    ](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2a596cde-690a-4441-a40d-bae3c0be0783_1490x4070.png)
-    
+
 
 *   this [article](https://messaging-custom-newsletters.nytimes.com/template/oakv2?campaign_id=50&emc=edit_cnda_20230204&instance_id=84519&nl=canada-letter&productCode=CNDA&regi_id=77145288&segment_id=124418&te=1&uri=nyt%3A%2F%2Fnewsletter%2Fb31d0b3b-00a8-596e-a845-0ee10b3a88a6&user_id=502341a504dc61a036278a69ed0a52f6) about the [recent](https://www.bccourts.ca/jdb-txt/sc/22/00/2022BCSC0049.htm?campaign_id=50&emc=edit_cnda_20230204&instance_id=84519&nl=canada-letter&regi_id=77145288&segment_id=124418&te=1&user_id=502341a504dc61a036278a69ed0a52f6#_Toc92879288) [rulings](https://canlii.ca/t/jv6dc#par131) on the right of homeless people in Canada
-    
+
 
 More substack content!
 

@@ -23,23 +23,23 @@ I was looking back at what I wrote [last year](https://www.newsletter.kahvipatel
 Anyways, here’s what I’ve put together for 2024:
 
 *   always be sore (from training), unless injured or sick
-    
+
 *   maintain a caloric deficit for some amount of time
-    
+
 *   take Spanish lessons
-    
+
 *   organize group trips
-    
+
 *   volunteer once a week at least five times
-    
+
 *   fill the watercolour notebook I got for christmas
-    
+
 *   hold a handstand for one minute
-    
+
 *   do a standing backflip
-    
+
 *   go sailing in the summer
-    
+
 
 server
 
@@ -48,13 +48,7 @@ server
 
 I bought a server this month. I can do fun things on it. I’ve been using [Cloudflare Tunnels](https://www.youtube.com/watch?v=ey4u7OUAF3c&pp=ygURY2xvdWRmbGFyZSB0dW5uZWw%3D) to expose my services on the web.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F95df0f71-39b7-4538-bcc6-df3d6542a49d_3024x4032.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F95df0f71-39b7-4538-bcc6-df3d6542a49d_3024x4032.jpeg)
 
 a shelf
 
@@ -67,13 +61,7 @@ I built a shelf in my room to hold my things!
 
 the shelf building process
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa17e6d0f-b750-40cb-ac65-ed9f2113e4be_3024x2845.jpeg)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa17e6d0f-b750-40cb-ac65-ed9f2113e4be_3024x2845.jpeg)
 
 weightlifting
 
@@ -94,13 +82,7 @@ For me, the fun part about lifting has been increasing my performance over time.
 
 It’s pretty cool how bringing your body close to failure triggers it to adapt and grow. Almost like [an analogy for life](https://www.youtube.com/watch?v=Xn676-fLq7I)! It’s crazy.
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F38347ce9-dd61-48c5-ae73-a50d48b3fbd1_2532x1170.png)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F38347ce9-dd61-48c5-ae73-a50d48b3fbd1_2532x1170.png)
 
 (I’ve been training bench press, overhead press, squats, deadlifts and some combination of dumbbell exercises)
 

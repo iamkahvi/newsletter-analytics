@@ -197,6 +197,12 @@ async function generateReport(metrics: PostMetrics[]): Promise<void> {
   console.log("\nBasic Statistics:");
   console.log(`Total Regular Posts: ${regularPosts.length}`);
   console.log(`Total Special Posts: ${specialPosts.length}`);
+
+  regularPosts.forEach((post) => {
+    // console.log(`${post.filename}: ${post.wordCount} words`);
+    console.log(post.wordCount);
+  });
+
   const totalWords = regularPosts.reduce(
     (sum, post) => sum + post.wordCount,
     0

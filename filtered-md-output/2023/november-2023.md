@@ -24,13 +24,7 @@ I did start watching Spanish tv with the subtitles on. It’s quite helpful for 
 
 I kept a note of common phrases because I left my Spanish phrasebook on the plane:
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc9102069-310f-4548-8ab0-f46d087327a9_1658x1326.png)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc9102069-310f-4548-8ab0-f46d087327a9_1658x1326.png)
 
 Aside from the practical merits, I enjoy the tone and cadence of Spanish. It sounds smooth and soft and flowy. English is more jagged and sharp. I want to sink into that other tone more.
 
@@ -48,15 +42,15 @@ I don’t have a book I’m eager to read at the moment. There’s about eight n
 I am in need of a fiction book recommendation. Preferably something spacey involving aliens or politics. My favourites of this genre include:
 
 *   The Three-Body Problem
-    
+
 *   A Memory Called Empire
-    
+
 *   Dune
-    
+
 *   Children of Time
-    
+
 *   Hyperion
-    
+
 
 Please provide any recommendations. PLEASE
 
@@ -66,9 +60,9 @@ other stuff
 -------------
 
 *   I’ve been working on [advent of code 2023](https://adventofcode.com/) very slowly. Mostly in Typescript, a bit in Rust. My repo is [here](https://github.com/iamkahvi/advent-of-code-2023)!
-    
+
 *   I finished [Dilla Time](https://www.goodreads.com/en/book/show/57693653) and was introduced to [Slum Village](https://open.spotify.com/track/2KBo6O5rkNdtYT3wYjkEkq?si=e3023aa713f14ad6) which I highly recommend.
-    
+
 
 end
 

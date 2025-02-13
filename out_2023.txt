@@ -1,264 +1,78 @@
-=== Newsletter Content Analysis ===
+Newsletter Analysis Report
+========================
 
-📊 Corpus Statistics:
-Documents analyzed: 12
-Total words: 9736
-Unique words: 2338
-Average words per document: 811.33
+Basic Statistics:
+Total Regular Posts: 12
+Total Special Posts: 0
+704
+1001
+1132
+876
+829
+999
+1333
+825
+305
+650
+398
+784
+Total Words: 9836
+Average Words per Post: 819.67
 
-📈 Most Common Words:
- 1. more: 43
- 2. here: 40
- 3. month: 39
- 4. things: 19
- 5. much: 16
- 6. english: 16
- 7. around: 16
- 8. bike: 16
- 9. next: 15
-10. very: 15
-11. hello: 15
-12. made: 14
-13. lsat: 14
-14. feel: 13
-15. something: 13
-16. percent: 13
-17. world: 13
-18. python: 13
-19. since: 12
-20. really: 12
+Link Analysis:
+Total Links: 202
 
-🔤 Most Common Phrases (Bigrams):
- 1. "here s": 18 occurrences
- 2. "don t": 10 occurrences
- 3. "hello world": 8 occurrences
- 4. "next month": 7 occurrences
- 5. "santa teresa": 7 occurrences
- 6. "is driving": 7 occurrences
- 7. "didn t": 6 occurrences
- 8. "let s": 6 occurrences
- 9. "law school": 6 occurrences
-10. "haven t": 5 occurrences
-11. "mushroom tea": 5 occurrences
-12. "scenic views": 5 occurrences
-13. "month s": 4 occurrences
-14. "s newsletter": 4 occurrences
-15. "m trying": 4 occurrences
+Top 10 Referenced Domains:
+substackcdn.com: 64 references
+www.youtube.com: 11 references
+www.newsletter.kahvipatel.com: 9 references
+en.wikipedia.org: 9 references
+youtu.be: 7 references
+kahvipatel.com: 7 references
+github.com: 6 references
+twitter.com: 4 references
+www.wikiwand.com: 4 references
+kahvi.server.com: 3 references
 
-📑 Important Terms by Document (TF-IDF):
+Image Analysis:
+Total Images: 64
+Average Images per Post: 5.33
 
-january-2023.md:
-the (23.9189), i (20.2391), a (16.5592), and (15.6393), to (15.6393)
+Heading Structure Analysis:
+H3: 9 occurrences
 
-november-2023.md:
-i (16.5592), mexico (13.9588), to (13.7994), the (11.9594), a (11.9594)
+Top 20 Keywords:
+] https //substackcdn com/image/fetch/fauto qauto: 62 occurrences
+it’s: 46 occurrences
+i’ve: 34 occurrences
+here: 25 occurrences
+they: 23 occurrences
+i’ll: 17 occurrences
+here’s: 13 occurrences
+there: 12 occurrences
+them: 11 occurrences
+month: 8 occurrences
+-------: 8 occurrences
+this month: 7 occurrences
+things: 7 occurrences
+time: 6 occurrences
+you’re: 6 occurrences
+the lsat: 6 occurrences
+python: 6 occurrences
+english: 6 occurrences
+something: 5 occurrences
+next month: 5 occurrences
 
-february-2023.md:
-the (45.9979), i (30.3586), to (24.8388), a (24.8388), santa (19.5423)
-
-august-2023.md:
-percent (36.2929), i (28.5187), a (27.5987), the (25.7588), sailing (22.3341)
-
-december-2023.md:
-the (40.4781), i (36.7983), it (23.9189), a (21.1590), of (20.2391)
-
-june-2023.md:
-the (47.8378), art (39.0846), of (24.8388), montreal (21.4766), to (20.2391)
-
-march-2023-on-ai-oh-no.md:
-python (36.2929), to (35.8783), the (30.3586), english (29.3806), hello (27.2820)
-
-october-2023.md:
-i (26.6788), the (24.8388), daylight (16.7506), a (15.6393), to (14.7193)
-
-april-2023.md:
-pilot (27.9176), to (27.5987), i (25.7588), a (23.9189), the (23.9189)
-
-september-2023.md:
-i (15.6393), why (10.6409), to (10.1195), the (10.1195), rebuild (8.3753)
-
-july-2023.md:
-the (56.1174), car (39.0846), i (38.6382), and (34.0384), driving (30.7094)
-
-may-2023-late-edition.md:
-the (45.9979), i (23.9189), test (23.8629), of (22.9989), apartments (22.3341)
-
-📚 Readability Metrics:
-january-2023.md:
-  - Grade Level: 272.5
-  - Average Sentence Length: 10.5 words
-november-2023.md:
-  - Grade Level: 152.9
-  - Average Sentence Length: 8.1 words
-february-2023.md:
-  - Grade Level: 358.8
-  - Average Sentence Length: 11.9 words
-august-2023.md:
-  - Grade Level: 318.3
-  - Average Sentence Length: 7.7 words
-december-2023.md:
-  - Grade Level: 305.0
-  - Average Sentence Length: 8.5 words
-june-2023.md:
-  - Grade Level: 369.8
-  - Average Sentence Length: 11.1 words
-march-2023-on-ai-oh-no.md:
-  - Grade Level: 440.4
-  - Average Sentence Length: 11.9 words
-october-2023.md:
-  - Grade Level: 252.1
-  - Average Sentence Length: 8.3 words
-april-2023.md:
-  - Grade Level: 336.3
-  - Average Sentence Length: 10.3 words
-september-2023.md:
-  - Grade Level: 112.5
-  - Average Sentence Length: 7.8 words
-july-2023.md:
-  - Grade Level: 505.3
-  - Average Sentence Length: 9.9 words
-may-2023-late-edition.md:
-  - Grade Level: 314.5
-  - Average Sentence Length: 10.9 words
-
-💭 Sentiment Analysis:
-april-2023.md:
-  - Raw Score: -0.01
-  - Normalized Score: -0.00
-august-2023.md:
-  - Raw Score: -0.00
-  - Normalized Score: -0.00
-december-2023.md:
-  - Raw Score: -0.05
-  - Normalized Score: -0.00
-february-2023.md:
-  - Raw Score: -0.04
-  - Normalized Score: -0.00
-january-2023.md:
-  - Raw Score: -0.07
-  - Normalized Score: -0.00
-july-2023.md:
-  - Raw Score: 0.00
-  - Normalized Score: 0.00
-june-2023.md:
-  - Raw Score: 0.02
-  - Normalized Score: 0.00
-march-2023-on-ai-oh-no.md:
-  - Raw Score: -0.03
-  - Normalized Score: -0.00
-may-2023-late-edition.md:
-  - Raw Score: -0.06
-  - Normalized Score: -0.00
-november-2023.md:
-  - Raw Score: -0.02
-  - Normalized Score: -0.00
-october-2023.md:
-  - Raw Score: -0.03
-  - Normalized Score: -0.00
-september-2023.md:
-  - Raw Score: -0.07
-  - Normalized Score: -0.00
-
-🔄 Similar Terms Analysis:
-
-Similar to "language":
-  - language
-  - languages
-  - large
-
-Similar to "model":
-  - more
-  - modem
-  - made
-  - mole
-  - move
-  - montreal
-  - monde
-  - mode
-  - model
-
-Similar to "data":
-  - at
-  - data
-
-Similar to "learning":
-  - learn
-  - learning
-  - learned
-  - reasoning
-  - lea
-  - meaning
-
-🌱 Common Word Stems:
-
-📈 Content Evolution:
-
-Time Period 1:
-  - Documents: april-2023.md, august-2023.md, december-2023.md
-  - Sentiment: -0.00
-  - Avg Words: 840
-
-Time Period 2:
-  - Documents: february-2023.md, january-2023.md, july-2023.md
-  - Sentiment: -0.00
-  - Avg Words: 992
-
-Time Period 3:
-  - Documents: june-2023.md, march-2023-on-ai-oh-no.md, may-2023-late-edition.md
-  - Sentiment: -0.00
-  - Avg Words: 957
-
-Time Period 4:
-  - Documents: november-2023.md, october-2023.md, september-2023.md
-  - Sentiment: -0.00
-  - Avg Words: 456
-
-📚 Vocabulary Complexity:
-
-april-2023.md:
-  - Average Word Length: 4.22 characters
-  - Vocabulary Diversity: 47.3%
-
-august-2023.md:
-  - Average Word Length: 4.27 characters
-  - Vocabulary Diversity: 48.1%
-
-december-2023.md:
-  - Average Word Length: 4.06 characters
-  - Vocabulary Diversity: 46.2%
-
-february-2023.md:
-  - Average Word Length: 4.30 characters
-  - Vocabulary Diversity: 51.1%
-
-january-2023.md:
-  - Average Word Length: 4.43 characters
-  - Vocabulary Diversity: 49.7%
-
-july-2023.md:
-  - Average Word Length: 3.96 characters
-  - Vocabulary Diversity: 35.7%
-
-june-2023.md:
-  - Average Word Length: 4.50 characters
-  - Vocabulary Diversity: 45.3%
-
-march-2023-on-ai-oh-no.md:
-  - Average Word Length: 4.49 characters
-  - Vocabulary Diversity: 36.3%
-
-may-2023-late-edition.md:
-  - Average Word Length: 4.41 characters
-  - Vocabulary Diversity: 42.8%
-
-november-2023.md:
-  - Average Word Length: 4.18 characters
-  - Vocabulary Diversity: 60.1%
-
-october-2023.md:
-  - Average Word Length: 4.31 characters
-  - Vocabulary Diversity: 50.0%
-
-september-2023.md:
-  - Average Word Length: 4.02 characters
-  - Vocabulary Diversity: 57.6%
+Monthly Word Count Trends:
+December 2022: 704 words, 3 images, 26 links
+January 2023: 1001 words, 15 images, 33 links
+February 2023: 1132 words, 1 images, 7 links
+March 2023: 876 words, 2 images, 21 links
+April 2023: 829 words, 6 images, 15 links
+May 2023: 999 words, 14 images, 18 links
+June 2023: 1333 words, 12 images, 15 links
+July 2023: 825 words, 4 images, 22 links
+August 2023: 305 words, 2 images, 12 links
+September 2023: 650 words, 1 images, 7 links
+October 2023: 398 words, 1 images, 9 links
+November 2023: 784 words, 3 images, 17 links

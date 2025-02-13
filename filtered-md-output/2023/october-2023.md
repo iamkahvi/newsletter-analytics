@@ -27,15 +27,15 @@ When I’m in a familiar environment, there’s less I need to pay attention to.
 I walk and think about stuff. Often I’ll be feeling anxious or sad without knowing why. Walking is a good way to figure it out. I tend to sort through five buckets:
 
 *   work
-    
+
 *   friends
-    
+
 *   passions/hobbies
-    
+
 *   health
-    
+
 *   family/relationships
-    
+
 
 I’ll walk and talk to myself about each bucket and pick out things that are happening.
 
@@ -50,13 +50,7 @@ Ah, daylight savings I hate you.
 
 Look at this graph of the amount of daylight in a year. The Y-axis is 24 clock and the X-axis is months in the year:
 
-[
-
 ![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa133a393-f700-4f00-989b-fd42bcbb7c82_1268x1400.png)
-
-
-
-](https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa133a393-f700-4f00-989b-fd42bcbb7c82_1268x1400.png)
 
 As expected, around the middle of the summer is where we get the most daylight. In the depths of winter we get the least.
 
@@ -84,11 +78,11 @@ I’d recommend both books if you want to be entertained/terrified.
 By reading them in quick succession, I’ve noticed identified some common traits both individuals share:
 
 *   socially awkward
-    
+
 *   little empathy
-    
+
 *   technically gifted
-    
+
 
 The more I think about it, the more it makes sense why these traits can lead to their success.
 
