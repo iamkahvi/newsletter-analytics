@@ -1,4 +1,5 @@
 output/
+site/analysis.json
 node_modules/
 .DS_Store
 bun.lock

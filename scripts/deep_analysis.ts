@@ -538,8 +538,10 @@ async function main() {
   };
 
   await mkdir("output", { recursive: true });
-  await Bun.write("output/analysis.json", JSON.stringify(output, null, 2));
-  console.log("Wrote output/analysis.json");
+  const json = JSON.stringify(output, null, 2);
+  await Bun.write("output/analysis.json", json);
+  await Bun.write("site/analysis.json", json);
+  console.log("Wrote output/analysis.json and site/analysis.json");
   console.log("Done.");
 }
 

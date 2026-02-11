@@ -491,7 +491,7 @@
 
     async function main() {
       try {
-        const res = await fetch('/data/analysis.json');
+        const res = await fetch('./analysis.json');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         allData = await res.json();
       } catch (e) {
