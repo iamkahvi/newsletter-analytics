@@ -131,14 +131,18 @@ async function analyzeNewsletter(
     let date: Date | null = null;
     let specialType: string | undefined;
 
-    const monthYearMatch = entry.name.match(/^([\w-]+)-(\d{4}).*\.md$/);
+    // Match filenames like "january-2025.md", "junejuly-2025.md", "march-2023-on-ai-oh-no.md"
+    const monthYearMatch = entry.name.match(/^([a-z]+)-(\d{4}).*\.md$/i);
     if (monthYearMatch) {
-      const [, month, year] = monthYearMatch;
-      const monthNum = getMonthNumber(month);
+      const [, monthStr, year] = monthYearMatch;
+      // Handle compound months like "junejuly" or "septemberoctober" — use the first month
+      const firstMonth = monthStr.match(/^(january|february|march|april|may|june|july|august|september|october|november|december)/i);
+      const monthNum = firstMonth ? getMonthNumber(firstMonth[1]) : -1;
       if (monthNum !== -1) {
         date = new Date(`${year}-${monthNum.toString().padStart(2, "0")}-01`);
       }
-    } else {
+    }
+    if (!date) {
       specialType = entry.name.replace(".md", "");
     }
 
@@ -286,12 +290,12 @@ async function generateReport(metrics: PostMetrics[]): Promise<void> {
 
   // Monthly trends
   console.log("\nMonthly Word Count Trends:");
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   regularPosts.forEach((post) => {
+    const m = monthNames[post.date.getUTCMonth()];
+    const y = post.date.getUTCFullYear();
     console.log(
-      `${post.date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-      })}: ${post.wordCount} words, ${post.imageCount} images, ${
+      `${m} ${y}: ${post.wordCount} words, ${post.imageCount} images, ${
         post.links.length
       } links`
     );

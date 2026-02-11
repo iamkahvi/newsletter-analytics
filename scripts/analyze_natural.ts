@@ -10,6 +10,7 @@ interface DocumentAnalysis {
   sentences: string[];
   wordFrequencies: Map<string, number>;
   bigrams: string[][];
+  rawContent: string;
 }
 
 // 1. Sentiment Analysis
@@ -60,11 +61,29 @@ function analyzeWordStems(words: string[]) {
   }));
 }
 
+// Strip markdown/HTML artifacts so readability metrics aren't inflated
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "") // images
+    .replace(/<img[^>]+>/g, "")              // HTML images
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // links → keep text
+    .replace(/https?:\/\/\S+/g, "")          // bare URLs
+    .replace(/[#*`_~>|]/g, "")              // formatting chars
+    .replace(/^-{3,}$/gm, "")               // horizontal rules
+    .replace(/^\s*[-*+]\s+/gm, "")          // list markers
+    .replace(/^\s*\d+\.\s+/gm, "")          // ordered list markers
+    .replace(/\n{2,}/g, ". ")               // paragraph breaks → sentence boundaries
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // Custom readability implementation
 function calculateReadability(text: string): number {
-  const sentences = text.split(/[.!?]+/);
-  const words = text.split(/\s+/);
-  const syllables = countSyllables(text);
+  const clean = stripMarkdown(text);
+  const sentences = clean.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+  const words = clean.split(/\s+/).filter((w) => w.length > 0);
+  if (sentences.length === 0 || words.length === 0) return 0;
+  const syllables = countSyllables(clean);
 
   // Flesch-Kincaid Grade Level formula
   const avgSentenceLength = words.length / sentences.length;
@@ -99,6 +118,21 @@ async function analyzeNewsletter(directoryPath: string) {
   const documents: DocumentAnalysis[] = [];
   const allWords = new Set<string>();
 
+  const stopWords = new Set([
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
+    "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
+    "this", "but", "his", "by", "from", "they", "we", "say", "her",
+    "she", "or", "an", "will", "my", "one", "all", "would", "there",
+    "their", "what", "so", "up", "out", "if", "about", "who", "get",
+    "which", "go", "me", "when", "make", "can", "like", "time", "no",
+    "just", "him", "know", "take", "people", "into", "year", "your",
+    "good", "some", "could", "them", "see", "other", "than", "then",
+    "now", "look", "only", "come", "its", "over", "think", "also",
+    "back", "after", "use", "two", "how", "our", "work", "first",
+    "well", "way", "even", "new", "want", "because", "any", "these",
+    "give", "day", "most", "us", "was", "were", "had", "has", "been",
+  ]);
+
   // First pass: collect all documents and build corpus
   for await (const entry of walk(directoryPath, {
     exts: [".md"],
@@ -132,9 +166,13 @@ async function analyzeNewsletter(directoryPath: string) {
       sentences,
       wordFrequencies,
       bigrams,
+      rawContent: content,
     });
 
-    tfidf.addDocument(tokens);
+    const filteredTokens = tokens.filter(
+      (t) => !stopWords.has(t) && t.length > 2
+    );
+    tfidf.addDocument(filteredTokens);
     tokens.forEach((token) => allWords.add(token));
   }
 
@@ -154,114 +192,6 @@ async function analyzeNewsletter(directoryPath: string) {
   console.log(`Average words per document: ${avgWordsPerDoc.toFixed(2)}`);
 
   // 2. Most Common Words
-  const stopWords = new Set([
-    "the",
-    "be",
-    "to",
-    "of",
-    "and",
-    "a",
-    "in",
-    "that",
-    "have",
-    "i",
-    "it",
-    "for",
-    "not",
-    "on",
-    "with",
-    "he",
-    "as",
-    "you",
-    "do",
-    "at",
-    "this",
-    "but",
-    "his",
-    "by",
-    "from",
-    "they",
-    "we",
-    "say",
-    "her",
-    "she",
-    "or",
-    "an",
-    "will",
-    "my",
-    "one",
-    "all",
-    "would",
-    "there",
-    "their",
-    "what",
-    "so",
-    "up",
-    "out",
-    "if",
-    "about",
-    "who",
-    "get",
-    "which",
-    "go",
-    "me",
-    "when",
-    "make",
-    "can",
-    "like",
-    "time",
-    "no",
-    "just",
-    "him",
-    "know",
-    "take",
-    "people",
-    "into",
-    "year",
-    "your",
-    "good",
-    "some",
-    "could",
-    "them",
-    "see",
-    "other",
-    "than",
-    "then",
-    "now",
-    "look",
-    "only",
-    "come",
-    "its",
-    "over",
-    "think",
-    "also",
-    "back",
-    "after",
-    "use",
-    "two",
-    "how",
-    "our",
-    "work",
-    "first",
-    "well",
-    "way",
-    "even",
-    "new",
-    "want",
-    "because",
-    "any",
-    "these",
-    "give",
-    "day",
-    "most",
-    "us",
-    "was",
-    "were",
-    "had",
-    "has",
-    "been",
-  ]);
-
   const wordFreqTotal = new Map<string, number>();
   documents.forEach((doc) => {
     doc.wordFrequencies.forEach((count, word) => {
@@ -316,8 +246,7 @@ async function analyzeNewsletter(directoryPath: string) {
   // 5. Readability Metrics with our custom implementation
   console.log("\n📚 Readability Metrics:");
   documents.forEach((doc) => {
-    const originalContent = doc.sentences.join(" ");
-    const readabilityScore = calculateReadability(originalContent);
+    const readabilityScore = calculateReadability(doc.rawContent);
     console.log(`${doc.filename}:`);
     console.log(`  - Grade Level: ${readabilityScore.toFixed(1)}`);
     console.log(
