@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Newsletter Deep Analysis</title>
+  <title>kahvi's newsletter analysis</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='18' width='5' height='10' rx='1' fill='%23f0883e'/><rect x='13' y='10' width='5' height='18' rx='1' fill='%23f0883e'/><rect x='22' y='4' width='5' height='24' rx='1' fill='%23f0883e'/></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
+    :root { --accent: #f0883e; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #0d1117;
@@ -14,7 +16,7 @@
       font-size: 14px;
       padding: 24px;
     }
-    h1 { color: #58a6ff; font-size: 22px; margin-bottom: 8px; }
+    h1 { color: var(--accent); font-size: 22px; margin-bottom: 8px; }
     h2 {
       color: #8b949e;
       font-size: 15px;
@@ -63,16 +65,71 @@
       padding: 12px 18px;
     }
     .stat .label { color: #8b949e; font-size: 12px; }
-    .stat .value { color: #58a6ff; font-size: 20px; font-weight: 600; }
+    .stat .value { color: var(--accent); font-size: 20px; font-weight: 600; }
     .loading { color: #8b949e; padding: 40px; text-align: center; }
     .opening-line { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .error-text { color: #f85149; }
     .description { color: #8b949e; font-size: 12px; margin: -6px 0 12px 0; }
+    .post-links {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+    }
+    .post-links summary {
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 13px;
+      user-select: none;
+    }
+    .post-links summary:hover { color: color-mix(in srgb, var(--accent), white 25%); }
+    .post-links-list {
+      list-style: none;
+      margin-top: 10px;
+      columns: 2;
+      column-gap: 32px;
+    }
+    @media (max-width: 700px) { .post-links-list { columns: 1; } }
+    .post-links-list li { padding: 2px 0; }
+    .post-links-list a {
+      color: #c9d1d9;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .post-links-list a:hover { color: var(--accent); text-decoration: underline; }
+    .post-links-list .post-date { color: #484f58; font-size: 12px; margin-left: 6px; }
+    .year-btn {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      padding: 4px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      margin-right: 4px;
+    }
+    .year-btn:hover { background: #30363d; }
+    .year-btn.active { background: var(--accent); color: #0d1117; border-color: var(--accent); }
   </style>
 </head>
 <body>
-  <h1>Newsletter Deep Analysis</h1>
+  <h1>kahvi's newsletter analysis</h1>
   <p id="subtitle" style="color: #8b949e; margin-bottom: 8px;"></p>
+
+  <div id="yearFilter" style="margin-bottom: 16px;">
+    <label style="color: #8b949e; margin-right: 8px;">Filter by year:</label>
+    <button class="year-btn active" data-year="all">All</button>
+    <button class="year-btn" data-year="2023">2023</button>
+    <button class="year-btn" data-year="2024">2024</button>
+    <button class="year-btn" data-year="2025">2025</button>
+  </div>
+
+  <details id="postLinks" class="post-links">
+    <summary id="postLinksSummary">Posts (0)</summary>
+    <ul id="postLinksContent" class="post-links-list"></ul>
+  </details>
 
   <div id="stats" class="stat-row"></div>
 
@@ -120,11 +177,17 @@
     </div>
 
     <div class="card full">
+      <h2>Days Late</h2>
+      <p class="description">Days after the end of the covered month that each newsletter was posted.</p>
+      <canvas id="daysLateChart"></canvas>
+    </div>
+
+    <div class="card full">
       <h2>Publication Timeline</h2>
       <p class="description">When each newsletter was actually sent, with subject line and subtitle.</p>
       <div style="max-height: 500px; overflow-y: auto;">
         <table id="publicationTable">
-          <thead><tr><th>Post</th><th>Subject Line</th><th>Subtitle</th><th>Posted</th><th>Days Since Last</th></tr></thead>
+          <thead><tr><th>Post</th><th>Subtitle</th><th>Posted</th><th>Days Since Last</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -134,7 +197,7 @@
       <h2>Opening Lines</h2>
       <div style="max-height: 400px; overflow-y: auto;">
         <table id="openingLinesTable">
-          <thead><tr><th>Post</th><th>Date</th><th>Opening Line</th></tr></thead>
+          <thead><tr><th>Post</th><th>Opening Line</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -179,48 +242,89 @@
       return JSON.parse(JSON.stringify({ ...chartDefaults, ...overrides }));
     }
 
-    async function main() {
-      let data;
-      try {
-        const res = await fetch('/data/analysis.json');
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        data = await res.json();
-      } catch (e) {
-        document.body.innerHTML = `<div class="loading error-text">Failed to load analysis.json: ${e.message}<br>Run "bun run deep-analyze" first.</div>`;
-        return;
-      }
+    let allData = null;
+    const activeCharts = [];
 
-      const posts = data.posts;
+    function postYear(p) {
+      if (p.date) return p.date.slice(0, 4);
+      if (p.postedDate) return p.postedDate.slice(0, 4);
+      return null;
+    }
+
+    function filterByYear(arr, year, yearFn) {
+      if (year === 'all') return arr;
+      return arr.filter(item => yearFn(item) === year);
+    }
+
+    function destroyCharts() {
+      while (activeCharts.length) activeCharts.pop().destroy();
+    }
+
+    function makeChart(id, config) {
+      const chart = new Chart(document.getElementById(id), config);
+      activeCharts.push(chart);
+      return chart;
+    }
+
+    function render(year) {
+      destroyCharts();
+      const data = allData;
+      const posts = filterByYear(data.posts, year, postYear);
       const labels = posts.map(p => shortName(p.filename));
+
+      // Filter vocab growth and entity data by year
+      const vg = filterByYear(data.global.vocabGrowth, year, v => {
+        const match = v.post.match(/(\d{4})/);
+        return match ? match[1] : null;
+      });
 
       // Summary stats
       const totalWords = posts.reduce((s, p) => s + p.wordCount, 0);
-      const avgWords = Math.round(totalWords / posts.length);
-      const avgReadability = (posts.reduce((s, p) => s + p.readability, 0) / posts.length).toFixed(1);
+      const avgWords = posts.length ? Math.round(totalWords / posts.length) : 0;
+      const avgReadability = posts.length ? (posts.reduce((s, p) => s + p.readability, 0) / posts.length).toFixed(1) : '0';
       const totalSelfRefs = posts.reduce((s, p) => s + p.selfReferences, 0);
+      const filteredLinkRot = filterByYear(data.global.linkRot, year, l => {
+        const match = l.source.match(/(\d{4})/);
+        return match ? match[1] : null;
+      });
 
-      document.getElementById('subtitle').textContent = `${posts.length} posts analyzed`;
+      document.getElementById('subtitle').textContent = `${posts.length} posts analyzed` + (year !== 'all' ? ` (${year})` : '');
+
+      // Post links
+      document.getElementById('postLinksSummary').textContent = `Posts (${posts.length})`;
+      const linksContainer = document.getElementById('postLinksContent');
+      const sortedPosts = [...posts].sort((a, b) => {
+        const da = a.postedDate || a.date || '';
+        const db = b.postedDate || b.date || '';
+        return da.localeCompare(db);
+      });
+      linksContainer.innerHTML = sortedPosts.map(p => {
+        const slug = p.filename.replace('.md', '');
+        const url = `https://www.newsletter.kahvipatel.com/p/${slug}`;
+        const label = p.subjectLine || shortName(p.filename);
+        const dateStr = p.postedDate ? new Date(p.postedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+        return `<li><a href="${url}" target="_blank" rel="noopener">${label}</a>${dateStr ? `<span class="post-date">${dateStr}</span>` : ''}</li>`;
+      }).join('');
       document.getElementById('stats').innerHTML = `
         <div class="stat"><div class="label">Total Words</div><div class="value">${totalWords.toLocaleString()}</div></div>
         <div class="stat"><div class="label">Avg Words/Post</div><div class="value">${avgWords.toLocaleString()}</div></div>
         <div class="stat"><div class="label">Avg Grade Level</div><div class="value">${avgReadability}</div></div>
-        <div class="stat"><div class="label">Unique Vocab</div><div class="value">${data.global.vocabGrowth.at(-1)?.cumulativeUnique.toLocaleString() || 0}</div></div>
+        <div class="stat"><div class="label">Unique Vocab</div><div class="value">${(vg.length ? vg.at(-1).cumulativeUnique : 0).toLocaleString()}</div></div>
         <div class="stat"><div class="label">Self-References</div><div class="value">${totalSelfRefs}</div></div>
-        <div class="stat"><div class="label">Broken Links</div><div class="value">${data.global.linkRot.length}</div></div>
       `;
 
       // 1. Word Count
-      new Chart(document.getElementById('wordCountChart'), {
+      makeChart('wordCountChart', {
         type: 'bar',
         data: {
           labels,
-          datasets: [{ label: 'Words', data: posts.map(p => p.wordCount), backgroundColor: '#58a6ff88', borderColor: '#58a6ff', borderWidth: 1 }],
+          datasets: [{ label: 'Words', data: posts.map(p => p.wordCount), backgroundColor: '#f0883e88', borderColor: '#f0883e', borderWidth: 1 }],
         },
         options: mergeOpts({ plugins: { legend: { display: false } } }),
       });
 
       // 2. Readability
-      new Chart(document.getElementById('readabilityChart'), {
+      makeChart('readabilityChart', {
         type: 'line',
         data: {
           labels,
@@ -230,21 +334,21 @@
       });
 
       // 3. Sentence Length
-      new Chart(document.getElementById('sentenceLengthChart'), {
+      makeChart('sentenceLengthChart', {
         type: 'line',
         data: {
           labels,
           datasets: [
-            { label: 'Mean', data: posts.map(p => p.sentenceStats.mean), borderColor: '#58a6ff', tension: 0.3 },
-            { label: 'Mean + Stdev', data: posts.map(p => p.sentenceStats.mean + p.sentenceStats.stdev), borderColor: '#58a6ff44', backgroundColor: '#58a6ff11', fill: '+1', tension: 0.3 },
-            { label: 'Mean - Stdev', data: posts.map(p => Math.max(0, p.sentenceStats.mean - p.sentenceStats.stdev)), borderColor: '#58a6ff44', fill: false, tension: 0.3 },
+            { label: 'Mean', data: posts.map(p => p.sentenceStats.mean), borderColor: '#f0883e', tension: 0.3 },
+            { label: 'Mean + Stdev', data: posts.map(p => p.sentenceStats.mean + p.sentenceStats.stdev), borderColor: '#f0883e44', backgroundColor: '#f0883e11', fill: '+1', tension: 0.3 },
+            { label: 'Mean - Stdev', data: posts.map(p => Math.max(0, p.sentenceStats.mean - p.sentenceStats.stdev)), borderColor: '#f0883e44', fill: false, tension: 0.3 },
           ],
         },
         options: mergeOpts({}),
       });
 
       // 4. Question Density
-      new Chart(document.getElementById('questionDensityChart'), {
+      makeChart('questionDensityChart', {
         type: 'bar',
         data: {
           labels,
@@ -254,7 +358,7 @@
       });
 
       // 5. List vs Prose
-      new Chart(document.getElementById('listProseChart'), {
+      makeChart('listProseChart', {
         type: 'bar',
         data: {
           labels,
@@ -267,8 +371,7 @@
       });
 
       // 6. Vocabulary Growth
-      const vg = data.global.vocabGrowth;
-      new Chart(document.getElementById('vocabGrowthChart'), {
+      makeChart('vocabGrowthChart', {
         type: 'line',
         data: {
           labels: vg.map(v => shortName(v.post)),
@@ -288,13 +391,17 @@
 
       // 7. Named Entities
       const entityNames = Object.keys(data.global.topEntitiesOverTime).slice(0, 8);
-      new Chart(document.getElementById('entityChart'), {
+      // Build filtered entity data: only include data points matching the year filter
+      const filteredPostNames = new Set(posts.map(p => p.filename));
+      makeChart('entityChart', {
         type: 'line',
         data: {
           labels,
           datasets: entityNames.map((name, i) => ({
             label: name,
-            data: data.global.topEntitiesOverTime[name].map(e => e.count),
+            data: data.global.topEntitiesOverTime[name]
+              .filter(e => filteredPostNames.has(e.post))
+              .map(e => e.count),
             borderColor: COLORS[i % COLORS.length],
             tension: 0.3,
             borderWidth: 2,
@@ -304,8 +411,8 @@
         options: mergeOpts({}),
       });
 
-      // 9. Self-References
-      new Chart(document.getElementById('selfRefChart'), {
+      // 8. Self-References
+      makeChart('selfRefChart', {
         type: 'bar',
         data: {
           labels,
@@ -314,8 +421,34 @@
         options: mergeOpts({ plugins: { legend: { display: false } } }),
       });
 
+      // 9. Days Late
+      const daysLateData = posts
+        .filter(p => p.date && p.postedDate)
+        .map(p => {
+          const coverDate = new Date(p.date);
+          const endOfMonth = new Date(coverDate.getUTCFullYear(), coverDate.getUTCMonth() + 1, 0);
+          const posted = new Date(p.postedDate);
+          const daysLate = Math.round((posted - endOfMonth) / (1000 * 60 * 60 * 24));
+          return { label: shortName(p.filename), daysLate };
+        });
+      makeChart('daysLateChart', {
+        type: 'bar',
+        data: {
+          labels: daysLateData.map(d => d.label),
+          datasets: [{
+            label: 'Days Late',
+            data: daysLateData.map(d => d.daysLate),
+            backgroundColor: daysLateData.map(d => d.daysLate > 30 ? '#f8514988' : d.daysLate > 14 ? '#d2992288' : '#3fb95088'),
+            borderColor: daysLateData.map(d => d.daysLate > 30 ? '#f85149' : d.daysLate > 14 ? '#d29922' : '#3fb950'),
+            borderWidth: 1,
+          }],
+        },
+        options: mergeOpts({ plugins: { legend: { display: false } } }),
+      });
+
       // 10. Publication Timeline table
       const pubBody = document.querySelector('#publicationTable tbody');
+      pubBody.innerHTML = '';
       let lastPosted = null;
       for (const p of posts) {
         const tr = document.createElement('tr');
@@ -326,29 +459,62 @@
           daysSince = Math.round((posted - lastPosted) / (1000 * 60 * 60 * 24)).toString();
         }
         if (posted) lastPosted = posted;
-        tr.innerHTML = `<td>${shortName(p.filename)}</td><td>${p.subjectLine || '--'}</td><td>${p.subtitle || '--'}</td><td>${postedStr}</td><td>${daysSince}</td>`;
+        tr.innerHTML = `<td>${p.subjectLine || shortName(p.filename)}</td><td>${p.subtitle || '--'}</td><td>${postedStr}</td><td>${daysSince}</td>`;
         pubBody.appendChild(tr);
       }
 
       // 11. Opening Lines table
       const tbody = document.querySelector('#openingLinesTable tbody');
+      tbody.innerHTML = '';
       for (const p of posts) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${shortName(p.filename)}</td><td>${p.date || 'special'}</td><td class="opening-line" title="${p.openingLine.replace(/"/g, '&quot;')}">${p.openingLine}</td>`;
+        tr.innerHTML = `<td>${p.subjectLine || shortName(p.filename)}</td><td class="opening-line" title="${p.openingLine.replace(/"/g, '&quot;')}">${p.openingLine}</td>`;
         tbody.appendChild(tr);
       }
 
-      // 11. Broken Links table
-      if (data.global.linkRot.length > 0) {
-        document.getElementById('linkRotCard').style.display = 'block';
-        const rotBody = document.querySelector('#linkRotTable tbody');
-        for (const link of data.global.linkRot) {
+      // 12. Broken Links table
+      const linkRotCard = document.getElementById('linkRotCard');
+      const rotBody = document.querySelector('#linkRotTable tbody');
+      rotBody.innerHTML = '';
+      if (filteredLinkRot.length > 0) {
+        linkRotCard.style.display = 'block';
+        for (const link of filteredLinkRot) {
           const tr = document.createElement('tr');
           const statusClass = link.status === 'error' ? 'error-text' : '';
           tr.innerHTML = `<td style="word-break:break-all; max-width:400px;">${link.url}</td><td class="${statusClass}">${link.status}</td><td>${link.source}</td>`;
           rotBody.appendChild(tr);
         }
+      } else {
+        linkRotCard.style.display = 'none';
       }
+    }
+
+    async function main() {
+      try {
+        const res = await fetch('/data/analysis.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        allData = await res.json();
+      } catch (e) {
+        document.body.innerHTML = `<div class="loading error-text">Failed to load analysis.json: ${e.message}<br>Run "bun run deep-analyze" first.</div>`;
+        return;
+      }
+
+      // Year filter buttons
+      function setYear(year) {
+        document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector(`.year-btn[data-year="${year}"]`).classList.add('active');
+        const url = new URL(window.location);
+        if (year === 'all') { url.searchParams.delete('year'); } else { url.searchParams.set('year', year); }
+        history.replaceState(null, '', url);
+        render(year);
+      }
+
+      document.querySelectorAll('.year-btn').forEach(btn => {
+        btn.addEventListener('click', () => setYear(btn.dataset.year));
+      });
+
+      const initialYear = new URLSearchParams(window.location.search).get('year') || 'all';
+      setYear(initialYear);
     }
 
     main();
