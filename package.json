@@ -1,11 +1,24 @@
 {
   "name": "newsletter_backup",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "author": "Kahvi Patel <iamkahvi@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "sync": "bun run scripts/sync_links.ts",
+    "fetch": "bash scripts/get_text.sh link_list.txt output/html-filtered",
+    "convert": "bun run scripts/process_html_to_markdown.ts --mode list link_list.txt --output output/markdown",
+    "combine": "bun run scripts/combine_markdown.ts",
+    "organize": "bash cleanup.sh",
+    "analyze": "bun run scripts/analyze_markdown.ts output/markdown",
+    "analyze:nlp": "bun run scripts/analyze_natural.ts output/markdown",
+    "topics": "bun run scripts/x.ts",
+    "pipeline": "bun run sync && bun run fetch && bun run convert && bun run combine && bun run analyze"
+  },
   "dependencies": {
     "@types/turndown": "^5.0.5",
+    "compromise": "^14.10.1",
+    "natural": "^8.0.1",
     "turndown": "^7.2.0"
   },
   "devDependencies": {

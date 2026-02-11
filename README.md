@@ -14,7 +14,7 @@ This repo archives Substack newsletter posts and runs content analysis on them. 
 
 ## Prerequisites
 
-- [Deno](https://deno.land/)
+- [Bun](https://bun.sh/)
 - [htmlq](https://github.com/mgdm/htmlq) — `brew install htmlq`
 - [pandoc](https://pandoc.org/) — `brew install pandoc`
 
@@ -22,7 +22,7 @@ This repo archives Substack newsletter posts and runs content analysis on them. 
 
 ```
 link_list.txt           Master list of all newsletter post URLs
-deno.json               Deno config with task definitions
+package.json            Package config with script definitions
 scripts/
   sync_links.ts         Discover new posts from Substack RSS feed
   get_text.sh           Batch fetch filtered HTML from Substack
@@ -51,20 +51,20 @@ output/                 All generated files (gitignored)
 Run sync, fetch, convert, combine, and analyze in one command:
 
 ```sh
-deno task pipeline
+bun run pipeline
 ```
 
 Or run individual stages:
 
 ```sh
-deno task sync        # Discover new posts from RSS
-deno task fetch       # Fetch filtered HTML
-deno task convert     # Convert to markdown (writes to output/markdown/)
-deno task combine     # Generate output/combined.md
-deno task organize    # Organize into year/month folders
-deno task analyze     # Structural analysis
-deno task analyze:nlp # NLP analysis
-deno task topics      # Quick topic extraction
+bun run sync        # Discover new posts from RSS
+bun run fetch       # Fetch filtered HTML
+bun run convert     # Convert to markdown (writes to output/markdown/)
+bun run combine     # Generate output/combined.md
+bun run organize    # Organize into year/month folders
+bun run analyze     # Structural analysis
+bun run analyze:nlp # NLP analysis
+bun run topics      # Quick topic extraction
 ```
 
 ### Individual commands
@@ -72,7 +72,7 @@ deno task topics      # Quick topic extraction
 **Sync link list** with Substack RSS feed (appends new posts to `link_list.txt`):
 
 ```sh
-deno run --allow-net --allow-read --allow-write scripts/sync_links.ts
+bun run scripts/sync_links.ts
 ```
 
 **Batch fetch** filtered HTML for all posts in `link_list.txt`:
@@ -84,13 +84,13 @@ bash scripts/get_text.sh link_list.txt output/html-filtered
 **Single post** fetch and convert to markdown (outputs to stdout):
 
 ```sh
-deno run --allow-run --allow-read --allow-net scripts/process_html_to_markdown.ts --mode link https://www.newsletter.kahvipatel.com/p/january-2025
+bun run scripts/process_html_to_markdown.ts --mode link https://www.newsletter.kahvipatel.com/p/january-2025
 ```
 
 **Batch convert** to markdown files (writes to `output/markdown/`):
 
 ```sh
-deno run --allow-run --allow-read --allow-write --allow-net scripts/process_html_to_markdown.ts --mode list link_list.txt --output output/markdown
+bun run scripts/process_html_to_markdown.ts --mode list link_list.txt --output output/markdown
 ```
 
 Without `--output`, markdown is printed to stdout.
@@ -98,7 +98,7 @@ Without `--output`, markdown is printed to stdout.
 **Generate combined.md** from all markdown files:
 
 ```sh
-deno run --allow-read --allow-write scripts/combine_markdown.ts [directory]
+bun run scripts/combine_markdown.ts [directory]
 ```
 
 Default directory is `output/markdown`. Output is written to `output/combined.md`.
@@ -114,19 +114,19 @@ Moves HTML files from `output/html/` into `output/archive/YYYY/MM/` directories,
 **Structural analysis** — word counts, link/domain analysis, image counts, heading structure, keyword extraction via [compromise](https://github.com/spencermountain/compromise):
 
 ```sh
-deno run --allow-read --no-lock scripts/analyze_markdown.ts output/markdown
+bun run scripts/analyze_markdown.ts output/markdown
 ```
 
 **NLP analysis** — sentiment, TF-IDF, readability, bigrams, vocabulary complexity via [natural](https://github.com/NaturalNode/natural):
 
 ```sh
-deno run --allow-read --allow-env scripts/analyze_natural.ts output/markdown
+bun run scripts/analyze_natural.ts output/markdown
 ```
 
 **Quick topic extraction** from combined markdown:
 
 ```sh
-deno run --allow-read --no-lock scripts/x.ts
+bun run scripts/x.ts
 ```
 
 ## Known Issues

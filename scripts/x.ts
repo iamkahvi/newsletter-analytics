@@ -1,9 +1,9 @@
-import nlp from "https://esm.sh/compromise@14.10.1";
+import nlp from "compromise";
 
 const regexMdLinks = /\[([^\[]+)\](\(.*\))/gm;
 const regexMdImages = /!\[(.*)\]\((.+)\)/gm;
 
-const content = await Deno.readTextFile("./output/combined.md");
+const content = await Bun.file("./output/combined.md").text();
 
 const cleanContent = content
   .replace(regexMdImages, "")

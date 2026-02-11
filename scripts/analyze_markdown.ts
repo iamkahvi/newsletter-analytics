@@ -1,6 +1,7 @@
 // analyze_markdown.ts
-import nlp from "https://esm.sh/compromise@14.10.1";
-import { walk } from "https://deno.land/std/fs/mod.ts";
+import nlp from "compromise";
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
 
 interface PostMetrics {
   filename: string;
@@ -124,10 +125,13 @@ async function analyzeNewsletter(
 ): Promise<PostMetrics[]> {
   const metrics: PostMetrics[] = [];
 
-  for await (const entry of walk(directoryPath, {
-    exts: [".md"],
-  })) {
-    const content = await Deno.readTextFile(entry.path);
+  const entries = await readdir(directoryPath, { withFileTypes: true, recursive: true });
+  const mdFiles = entries
+    .filter((e) => e.isFile() && e.name.endsWith(".md"))
+    .map((e) => ({ path: join(e.parentPath ?? e.path, e.name), name: e.name }));
+
+  for (const entry of mdFiles) {
+    const content = await Bun.file(entry.path).text();
     let date: Date | null = null;
     let specialType: string | undefined;
 
@@ -305,7 +309,7 @@ async function generateReport(metrics: PostMetrics[]): Promise<void> {
 // Main execution
 if (import.meta.main) {
   try {
-    const directoryPath = Deno.args[0] || ".";
+    const directoryPath = process.argv[2] || ".";
     const metrics = await analyzeNewsletter(directoryPath);
     await generateReport(metrics);
   } catch (error) {

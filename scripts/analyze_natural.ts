@@ -1,7 +1,8 @@
 // analyze_natural.ts
 
-import natural from "npm:natural";
-import { walk } from "https://deno.land/std/fs/mod.ts";
+import natural from "natural";
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
 
 interface DocumentAnalysis {
   filename: string;
@@ -134,10 +135,13 @@ async function analyzeNewsletter(directoryPath: string) {
   ]);
 
   // First pass: collect all documents and build corpus
-  for await (const entry of walk(directoryPath, {
-    exts: [".md"],
-  })) {
-    const content = await Deno.readTextFile(entry.path);
+  const entries = await readdir(directoryPath, { withFileTypes: true, recursive: true });
+  const mdFiles = entries
+    .filter((e) => e.isFile() && e.name.endsWith(".md"))
+    .map((e) => ({ path: join(e.parentPath ?? e.path, e.name), name: e.name }));
+
+  for (const entry of mdFiles) {
+    const content = await Bun.file(entry.path).text();
 
     // Clean markdown syntax
     const cleanContent = content
@@ -185,7 +189,7 @@ async function analyzeNewsletter(directoryPath: string) {
   const uniqueWordsCount = allWords.size;
   const avgWordsPerDoc = totalWords / totalDocuments;
 
-  console.log("📊 Corpus Statistics:");
+  console.log("Corpus Statistics:");
   console.log(`Documents analyzed: ${totalDocuments}`);
   console.log(`Total words: ${totalWords}`);
   console.log(`Unique words: ${uniqueWordsCount}`);
@@ -201,7 +205,7 @@ async function analyzeNewsletter(directoryPath: string) {
     });
   });
 
-  console.log("\n📈 Most Common Words:");
+  console.log("\nMost Common Words:");
   [...wordFreqTotal.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 20)
@@ -220,7 +224,7 @@ async function analyzeNewsletter(directoryPath: string) {
     });
   });
 
-  console.log("\n🔤 Most Common Phrases (Bigrams):");
+  console.log("\nMost Common Phrases (Bigrams):");
   [...bigramFreq.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 15)
@@ -233,7 +237,7 @@ async function analyzeNewsletter(directoryPath: string) {
     });
 
   // 4. TF-IDF Analysis
-  console.log("\n📑 Important Terms by Document (TF-IDF):");
+  console.log("\nImportant Terms by Document (TF-IDF):");
   documents.forEach((doc, idx) => {
     console.log(`\n${doc.filename}:`);
     const terms = tfidf
@@ -244,7 +248,7 @@ async function analyzeNewsletter(directoryPath: string) {
   });
 
   // 5. Readability Metrics with our custom implementation
-  console.log("\n📚 Readability Metrics:");
+  console.log("\nReadability Metrics:");
   documents.forEach((doc) => {
     const readabilityScore = calculateReadability(doc.rawContent);
     console.log(`${doc.filename}:`);
@@ -257,7 +261,7 @@ async function analyzeNewsletter(directoryPath: string) {
   });
 
   // 6. Sentiment Analysis Over Time
-  console.log("\n💭 Sentiment Analysis:");
+  console.log("\nSentiment Analysis:");
   documents
     .sort((a, b) => a.filename.localeCompare(b.filename))
     .forEach((doc) => {
@@ -268,7 +272,7 @@ async function analyzeNewsletter(directoryPath: string) {
     });
 
   // 7. Similar Terms Analysis
-  console.log("\n🔄 Similar Terms Analysis:");
+  console.log("\nSimilar Terms Analysis:");
   const targetWords = ["language", "model", "data", "learning"];
   targetWords.forEach((word) => {
     const similar = findSimilarTerms(word, Array.from(allWords));
@@ -277,7 +281,7 @@ async function analyzeNewsletter(directoryPath: string) {
   });
 
   // 8. Most Common Word Stems
-  console.log("\n🌱 Common Word Stems:");
+  console.log("\nCommon Word Stems:");
   const commonWords = [...wordFreqTotal.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 50)
@@ -299,7 +303,7 @@ async function analyzeNewsletter(directoryPath: string) {
 
   // 9. Content Evolution Analysis
   if (documents.length > 1) {
-    console.log("\n📈 Content Evolution:");
+    console.log("\nContent Evolution:");
     const timeWindows = 4; // Divide content into quarters
     const sortedDocs = documents.sort((a, b) =>
       a.filename.localeCompare(b.filename)
@@ -326,7 +330,7 @@ async function analyzeNewsletter(directoryPath: string) {
   }
 
   // 10. Vocabulary Complexity Analysis
-  console.log("\n📚 Vocabulary Complexity:");
+  console.log("\nVocabulary Complexity:");
   documents.forEach((doc) => {
     const wordLengths = doc.tokens.map((w) => w.length);
     const avgWordLength =
@@ -344,7 +348,7 @@ async function analyzeNewsletter(directoryPath: string) {
 // Run the analysis
 if (import.meta.main) {
   try {
-    const directoryPath = Deno.args[0] || ".";
+    const directoryPath = process.argv[2] || ".";
     await analyzeNewsletter(directoryPath);
   } catch (error) {
     console.error("Error:", error.message);

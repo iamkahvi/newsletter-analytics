@@ -1,10 +1,12 @@
 // Import required modules
 import TurndownService from "turndown";
-import { parseArgs } from "@std/cli/parse-args";
+import { parseArgs } from "node:util";
+import { readFileSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
 
-// Usage: deno run --allow-run --allow-read --allow-net scripts/process_html_to_markdown.ts --mode link https://example.com
-// Usage: deno run --allow-run --allow-read --allow-net scripts/process_html_to_markdown.ts --mode list links.txt
-// Usage: deno run --allow-run --allow-read --allow-write --allow-net scripts/process_html_to_markdown.ts --mode list links.txt --output output/markdown
+// Usage: bun run scripts/process_html_to_markdown.ts --mode link https://example.com
+// Usage: bun run scripts/process_html_to_markdown.ts --mode list links.txt
+// Usage: bun run scripts/process_html_to_markdown.ts --mode list links.txt --output output/markdown
 
 const Mode = {
   LIST: "list",
@@ -12,15 +14,22 @@ const Mode = {
 } as const;
 
 // Get CLI arguments
-const args = parseArgs(Deno.args);
+const { values, positionals } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    mode: { type: "string" },
+    output: { type: "string" },
+  },
+  allowPositionals: true,
+});
 
-const { mode, output } = args;
+const { mode, output } = values;
 
 const turndownService = new TurndownService();
 
-if (![Mode.LIST, Mode.LINK].includes(mode)) {
+if (![Mode.LIST, Mode.LINK].includes(mode as string)) {
   console.log("Invalid mode");
-  Deno.exit(1);
+  process.exit(1);
 }
 
 function slugFromUrl(url: string): string {
@@ -31,10 +40,10 @@ function slugFromUrl(url: string): string {
 
 async function writeOrPrint(md: string, url: string) {
   if (output) {
-    await Deno.mkdir(output, { recursive: true });
+    await mkdir(output, { recursive: true });
     const filename = `${slugFromUrl(url)}.md`;
     const path = `${output}/${filename}`;
-    await Deno.writeTextFile(path, md);
+    await Bun.write(path, md);
     console.log(`Written: ${path}`);
   } else {
     console.log(md);
@@ -44,13 +53,13 @@ async function writeOrPrint(md: string, url: string) {
 switch (mode) {
   case Mode.LIST: {
     console.log("List mode");
-    if (args._.length < 1 || typeof args._[0] !== "string") {
+    if (positionals.length < 1 || typeof positionals[0] !== "string") {
       console.error(
-        "Usage: deno run --allow-read process_html_to_markdown.ts --mode list <file>"
+        "Usage: bun run process_html_to_markdown.ts --mode list <file>"
       );
-      Deno.exit(1);
+      process.exit(1);
     }
-    const lines = getLinesFromFile(args._[0]);
+    const lines = getLinesFromFile(positionals[0]);
     for (const line of lines) {
       if (!validateUrl(line)) {
         if (line.length > 0) console.error(`Invalid URL: ${line}`);
@@ -63,55 +72,46 @@ switch (mode) {
   }
   case Mode.LINK: {
     console.log("Link mode");
-    if (args._.length < 1 || typeof args._[0] !== "string") {
+    if (positionals.length < 1 || typeof positionals[0] !== "string") {
       console.error(
-        "Usage: deno run --allow-run process_html_to_markdown.ts --mode link <link>"
+        "Usage: bun run process_html_to_markdown.ts --mode link <link>"
       );
-      Deno.exit(1);
+      process.exit(1);
     }
 
     // validate link is a URL
-    if (!validateUrl(args._[0])) {
-      console.error(`Invalid URL: ${args._[0]}`);
-      Deno.exit(1);
+    if (!validateUrl(positionals[0])) {
+      console.error(`Invalid URL: ${positionals[0]}`);
+      process.exit(1);
     }
 
-    const md = await processUrlToMarkdown(args._[0]);
-    await writeOrPrint(md, args._[0]);
+    const md = await processUrlToMarkdown(positionals[0]);
+    await writeOrPrint(md, positionals[0]);
     break;
   }
   default:
     console.log("Invalid mode");
-    Deno.exit(1);
+    process.exit(1);
 }
 
 function getLinesFromFile(filePath: string): string[] {
-  const file = Deno.readTextFileSync(filePath);
+  const file = readFileSync(filePath, "utf-8");
   return file.split("\n").map((line) => line.trim());
 }
 
 async function getHtml(link: string) {
-  const command = new Deno.Command("curl", {
-    args: ["--silent", link],
+  const proc = Bun.spawn(["curl", "--silent", link], {
+    stdout: "pipe",
   });
-  const output = await command.output();
-  return new TextDecoder().decode(output.stdout);
+  return await new Response(proc.stdout).text();
 }
 
 async function selectHtml(html: string, selector: string) {
-  const htmlqCommand = new Deno.Command("htmlq", {
-    args: [selector],
-    stdin: "piped",
-    stdout: "piped",
+  const proc = Bun.spawn(["htmlq", selector], {
+    stdin: new Response(html),
+    stdout: "pipe",
   });
-  const htmlqProcess = htmlqCommand.spawn();
-
-  const writer = htmlqProcess.stdin.getWriter();
-  await writer.write(new TextEncoder().encode(html));
-  writer.close();
-
-  const htmlqOutput = await htmlqProcess.output();
-  return new TextDecoder().decode(htmlqOutput.stdout);
+  return await new Response(proc.stdout).text();
 }
 
 async function processUrlToMarkdown(url: string): Promise<string> {
