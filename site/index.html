@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Newsletter Deep Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 14px;
+      padding: 24px;
+    }
+    h1 { color: #58a6ff; font-size: 22px; margin-bottom: 8px; }
+    h2 {
+      color: #8b949e;
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #21262d;
+      padding-bottom: 6px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 16px;
+    }
+    .card.full { grid-column: 1 / -1; }
+    canvas { max-height: 340px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      text-align: left;
+      padding: 6px 10px;
+      border-bottom: 1px solid #21262d;
+    }
+    th { color: #8b949e; font-weight: 500; }
+    td { color: #c9d1d9; }
+    tr:hover td { background: #1c2128; }
+    .stat-row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .stat {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 12px 18px;
+    }
+    .stat .label { color: #8b949e; font-size: 12px; }
+    .stat .value { color: #58a6ff; font-size: 20px; font-weight: 600; }
+    .loading { color: #8b949e; padding: 40px; text-align: center; }
+    .opening-line { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .error-text { color: #f85149; }
+    .description { color: #8b949e; font-size: 12px; margin: -6px 0 12px 0; }
+  </style>
+</head>
+<body>
+  <h1>Newsletter Deep Analysis</h1>
+  <p id="subtitle" style="color: #8b949e; margin-bottom: 8px;"></p>
+
+  <div id="stats" class="stat-row"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Word Count Over Time</h2>
+      <canvas id="wordCountChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Readability Trend (Flesch-Kincaid Grade)</h2>
+      <canvas id="readabilityChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Sentence Length Trends</h2>
+      <canvas id="sentenceLengthChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Question Density</h2>
+      <canvas id="questionDensityChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>List vs Prose Ratio</h2>
+      <canvas id="listProseChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Vocabulary Growth</h2>
+      <canvas id="vocabGrowthChart"></canvas>
+    </div>
+
+    <div class="card full">
+      <h2>Named Entity Tracker (Top Entities Over Time)</h2>
+      <canvas id="entityChart"></canvas>
+    </div>
+
+
+    <div class="card">
+      <h2>Self-References</h2>
+      <p class="description">Links pointing back to newsletter.kahvipatel.com -- how often each post references previous newsletters.</p>
+      <canvas id="selfRefChart"></canvas>
+    </div>
+
+    <div class="card full">
+      <h2>Publication Timeline</h2>
+      <p class="description">When each newsletter was actually sent, with subject line and subtitle.</p>
+      <div style="max-height: 500px; overflow-y: auto;">
+        <table id="publicationTable">
+          <thead><tr><th>Post</th><th>Subject Line</th><th>Subtitle</th><th>Posted</th><th>Days Since Last</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card full">
+      <h2>Opening Lines</h2>
+      <div style="max-height: 400px; overflow-y: auto;">
+        <table id="openingLinesTable">
+          <thead><tr><th>Post</th><th>Date</th><th>Opening Line</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card full" id="linkRotCard" style="display: none;">
+      <h2>Broken Links</h2>
+      <div style="max-height: 400px; overflow-y: auto;">
+        <table id="linkRotTable">
+          <thead><tr><th>URL</th><th>Status</th><th>Source</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Maximally distinct hues for entity tracker lines
+    const COLORS = [
+      '#ff4444', '#00ccff', '#ffcc00', '#44ff44', '#ff44ff',
+      '#ff8800', '#4488ff', '#88ff00', '#ff0088', '#00ffaa',
+      '#aa44ff', '#ffff44', '#44ffff', '#ff6644', '#88aaff',
+    ];
+
+    function shortName(filename) {
+      return filename.replace('.md', '').replace(/-(\d{4}).*$/, ' $1');
+    }
+
+    const chartDefaults = {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { labels: { color: '#8b949e', font: { family: 'monospace', size: 11 } } },
+      },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { family: 'monospace', size: 10 }, maxRotation: 45 }, grid: { color: '#21262d' } },
+        y: { ticks: { color: '#8b949e', font: { family: 'monospace', size: 10 } }, grid: { color: '#21262d' } },
+      },
+    };
+
+    function mergeOpts(overrides) {
+      return JSON.parse(JSON.stringify({ ...chartDefaults, ...overrides }));
+    }
+
+    async function main() {
+      let data;
+      try {
+        const res = await fetch('/data/analysis.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        data = await res.json();
+      } catch (e) {
+        document.body.innerHTML = `<div class="loading error-text">Failed to load analysis.json: ${e.message}<br>Run "bun run deep-analyze" first.</div>`;
+        return;
+      }
+
+      const posts = data.posts;
+      const labels = posts.map(p => shortName(p.filename));
+
+      // Summary stats
+      const totalWords = posts.reduce((s, p) => s + p.wordCount, 0);
+      const avgWords = Math.round(totalWords / posts.length);
+      const avgReadability = (posts.reduce((s, p) => s + p.readability, 0) / posts.length).toFixed(1);
+      const totalSelfRefs = posts.reduce((s, p) => s + p.selfReferences, 0);
+
+      document.getElementById('subtitle').textContent = `${posts.length} posts analyzed`;
+      document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="label">Total Words</div><div class="value">${totalWords.toLocaleString()}</div></div>
+        <div class="stat"><div class="label">Avg Words/Post</div><div class="value">${avgWords.toLocaleString()}</div></div>
+        <div class="stat"><div class="label">Avg Grade Level</div><div class="value">${avgReadability}</div></div>
+        <div class="stat"><div class="label">Unique Vocab</div><div class="value">${data.global.vocabGrowth.at(-1)?.cumulativeUnique.toLocaleString() || 0}</div></div>
+        <div class="stat"><div class="label">Self-References</div><div class="value">${totalSelfRefs}</div></div>
+        <div class="stat"><div class="label">Broken Links</div><div class="value">${data.global.linkRot.length}</div></div>
+      `;
+
+      // 1. Word Count
+      new Chart(document.getElementById('wordCountChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: 'Words', data: posts.map(p => p.wordCount), backgroundColor: '#58a6ff88', borderColor: '#58a6ff', borderWidth: 1 }],
+        },
+        options: mergeOpts({ plugins: { legend: { display: false } } }),
+      });
+
+      // 2. Readability
+      new Chart(document.getElementById('readabilityChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{ label: 'Grade Level', data: posts.map(p => p.readability), borderColor: '#3fb950', backgroundColor: '#3fb95033', fill: true, tension: 0.3 }],
+        },
+        options: mergeOpts({ plugins: { legend: { display: false } } }),
+      });
+
+      // 3. Sentence Length
+      new Chart(document.getElementById('sentenceLengthChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Mean', data: posts.map(p => p.sentenceStats.mean), borderColor: '#58a6ff', tension: 0.3 },
+            { label: 'Mean + Stdev', data: posts.map(p => p.sentenceStats.mean + p.sentenceStats.stdev), borderColor: '#58a6ff44', backgroundColor: '#58a6ff11', fill: '+1', tension: 0.3 },
+            { label: 'Mean - Stdev', data: posts.map(p => Math.max(0, p.sentenceStats.mean - p.sentenceStats.stdev)), borderColor: '#58a6ff44', fill: false, tension: 0.3 },
+          ],
+        },
+        options: mergeOpts({}),
+      });
+
+      // 4. Question Density
+      new Chart(document.getElementById('questionDensityChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: 'Question %', data: posts.map(p => Math.round(p.questionDensity * 100)), backgroundColor: '#d2992288', borderColor: '#d29922', borderWidth: 1 }],
+        },
+        options: mergeOpts({ plugins: { legend: { display: false } }, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: '%', color: '#8b949e' } } } }),
+      });
+
+      // 5. List vs Prose
+      new Chart(document.getElementById('listProseChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'List', data: posts.map(p => Math.round(p.listProseRatio * 100)), backgroundColor: '#bc8cff88', borderColor: '#bc8cff', borderWidth: 1 },
+            { label: 'Prose', data: posts.map(p => Math.round((1 - p.listProseRatio) * 100)), backgroundColor: '#79c0ff88', borderColor: '#79c0ff', borderWidth: 1 },
+          ],
+        },
+        options: mergeOpts({ scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true, max: 100, title: { display: true, text: '%', color: '#8b949e' } } } }),
+      });
+
+      // 6. Vocabulary Growth
+      const vg = data.global.vocabGrowth;
+      new Chart(document.getElementById('vocabGrowthChart'), {
+        type: 'line',
+        data: {
+          labels: vg.map(v => shortName(v.post)),
+          datasets: [
+            { label: 'Cumulative Unique', data: vg.map(v => v.cumulativeUnique), borderColor: '#3fb950', tension: 0.3, yAxisID: 'y' },
+            { label: 'New Words', data: vg.map(v => v.newWords), type: 'bar', backgroundColor: '#3fb95044', borderColor: '#3fb950', borderWidth: 1, yAxisID: 'y1' },
+          ],
+        },
+        options: mergeOpts({
+          scales: {
+            x: chartDefaults.scales.x,
+            y: { ...chartDefaults.scales.y, position: 'left', title: { display: true, text: 'Cumulative', color: '#8b949e' } },
+            y1: { ...chartDefaults.scales.y, position: 'right', title: { display: true, text: 'New', color: '#8b949e' }, grid: { drawOnChartArea: false } },
+          },
+        }),
+      });
+
+      // 7. Named Entities
+      const entityNames = Object.keys(data.global.topEntitiesOverTime).slice(0, 8);
+      new Chart(document.getElementById('entityChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: entityNames.map((name, i) => ({
+            label: name,
+            data: data.global.topEntitiesOverTime[name].map(e => e.count),
+            borderColor: COLORS[i % COLORS.length],
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 2,
+          })),
+        },
+        options: mergeOpts({}),
+      });
+
+      // 9. Self-References
+      new Chart(document.getElementById('selfRefChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: 'Self-refs', data: posts.map(p => p.selfReferences), backgroundColor: '#f8514988', borderColor: '#f85149', borderWidth: 1 }],
+        },
+        options: mergeOpts({ plugins: { legend: { display: false } } }),
+      });
+
+      // 10. Publication Timeline table
+      const pubBody = document.querySelector('#publicationTable tbody');
+      let lastPosted = null;
+      for (const p of posts) {
+        const tr = document.createElement('tr');
+        const posted = p.postedDate ? new Date(p.postedDate) : null;
+        const postedStr = posted ? posted.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '--';
+        let daysSince = '--';
+        if (posted && lastPosted) {
+          daysSince = Math.round((posted - lastPosted) / (1000 * 60 * 60 * 24)).toString();
+        }
+        if (posted) lastPosted = posted;
+        tr.innerHTML = `<td>${shortName(p.filename)}</td><td>${p.subjectLine || '--'}</td><td>${p.subtitle || '--'}</td><td>${postedStr}</td><td>${daysSince}</td>`;
+        pubBody.appendChild(tr);
+      }
+
+      // 11. Opening Lines table
+      const tbody = document.querySelector('#openingLinesTable tbody');
+      for (const p of posts) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${shortName(p.filename)}</td><td>${p.date || 'special'}</td><td class="opening-line" title="${p.openingLine.replace(/"/g, '&quot;')}">${p.openingLine}</td>`;
+        tbody.appendChild(tr);
+      }
+
+      // 11. Broken Links table
+      if (data.global.linkRot.length > 0) {
+        document.getElementById('linkRotCard').style.display = 'block';
+        const rotBody = document.querySelector('#linkRotTable tbody');
+        for (const link of data.global.linkRot) {
+          const tr = document.createElement('tr');
+          const statusClass = link.status === 'error' ? 'error-text' : '';
+          tr.innerHTML = `<td style="word-break:break-all; max-width:400px;">${link.url}</td><td class="${statusClass}">${link.status}</td><td>${link.source}</td>`;
+          rotBody.appendChild(tr);
+        }
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>

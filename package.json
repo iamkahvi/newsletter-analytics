@@ -13,7 +13,10 @@
     "analyze": "bun run scripts/analyze_markdown.ts output/markdown",
     "analyze:nlp": "bun run scripts/analyze_natural.ts output/markdown",
     "topics": "bun run scripts/x.ts",
-    "pipeline": "bun run sync && bun run fetch && bun run convert && bun run combine && bun run analyze"
+    "pipeline": "bun run sync && bun run fetch && bun run convert && bun run combine && bun run analyze",
+    "fetch-metadata": "bun run scripts/fetch_metadata.ts",
+    "deep-analyze": "bun run scripts/deep_analysis.ts",
+    "site": "bun run scripts/serve.ts"
   },
   "dependencies": {
     "@types/turndown": "^5.0.5",
