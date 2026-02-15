@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kahvi's newsletter analysis · year comparison</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='18' width='5' height='10' rx='1' fill='%23f0883e'/><rect x='13' y='10' width='5' height='18' rx='1' fill='%23f0883e'/><rect x='22' y='4' width='5' height='24' rx='1' fill='%23f0883e'/></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    :root { --accent: #f0883e; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 14px;
+      padding: 24px;
+    }
+    h1 { color: var(--accent); font-size: 22px; margin-bottom: 8px; }
+    h2 {
+      color: #8b949e;
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #21262d;
+      padding-bottom: 6px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 16px;
+    }
+    canvas { max-height: 340px; }
+    .loading { color: #8b949e; padding: 40px; text-align: center; }
+    .error-text { color: #f85149; }
+    .year-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 14px;
+      padding: 6px 10px;
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .year-toggle input { accent-color: var(--accent); }
+    .year-toggle.highlight {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent), transparent 40%);
+    }
+    .legend-note {
+      color: #8b949e;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>kahvi's newsletter analysis</h1>
+  <p style="color: #8b949e; margin-bottom: 8px;">Year-over-year comparison (monthly averages, superimposed)</p>
+  <div style="margin-bottom: 16px;">
+    <a href="./index.html" style="color: #8b949e; text-decoration: none; font-size: 13px;">← Back to overview</a>
+  </div>
+
+  <div id="yearSelectors" style="margin-bottom: 16px;"></div>
+  <div class="legend-note">Most recent year uses the accent color and thicker line weight.</div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Word Count (Avg per month)</h2>
+      <canvas id="wordCountChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Readability (Flesch-Kincaid Grade)</h2>
+      <canvas id="readabilityChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Sentence Length (Mean)</h2>
+      <canvas id="sentenceLengthChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Question Density (%)</h2>
+      <canvas id="questionDensityChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>List Ratio (%)</h2>
+      <canvas id="listRatioChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Self-References (Avg per month)</h2>
+      <canvas id="selfRefChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Days Late (Avg per month)</h2>
+      <canvas id="daysLateChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const COLORS = [
+      '#79c0ff', '#3fb950', '#d29922', '#bc8cff', '#ff7b72',
+      '#a5d6ff', '#ffa657', '#7ee787', '#ffa198', '#c9d1d9',
+    ];
+    const ACCENT = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#f0883e';
+    const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+
+    const chartDefaults = {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { labels: { color: '#8b949e', font: { family: 'monospace', size: 11 } } },
+      },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { family: 'monospace', size: 10 } }, grid: { color: '#21262d' } },
+        y: { ticks: { color: '#8b949e', font: { family: 'monospace', size: 10 } }, grid: { color: '#21262d' } },
+      },
+    };
+
+    const metrics = [
+      { id: 'wordCountChart', label: 'Word Count', fn: p => p.wordCount },
+      { id: 'readabilityChart', label: 'Readability', fn: p => p.readability },
+      { id: 'sentenceLengthChart', label: 'Sentence Length', fn: p => p.sentenceStats?.mean },
+      { id: 'questionDensityChart', label: 'Question Density (%)', fn: p => p.questionDensity * 100 },
+      { id: 'listRatioChart', label: 'List Ratio (%)', fn: p => p.listProseRatio * 100 },
+      { id: 'selfRefChart', label: 'Self-References', fn: p => p.selfReferences },
+      { id: 'daysLateChart', label: 'Days Late', fn: p => daysLateValue(p) },
+    ];
+
+    function mergeOpts(overrides) {
+      return JSON.parse(JSON.stringify({ ...chartDefaults, ...overrides }));
+    }
+
+    function lastMonthIndex(text) {
+      if (!text) return null;
+      const lower = text.toLowerCase();
+      let lastPos = -1;
+      let found = null;
+      MONTH_NAMES.forEach((name, index) => {
+        const pos = lower.lastIndexOf(name);
+        if (pos > lastPos) {
+          lastPos = pos;
+          found = index;
+        }
+      });
+      return found;
+    }
+
+    function coverageDate(post) {
+      const base = post.date || post.postedDate;
+      if (!base) return null;
+      const baseDate = new Date(base);
+      if (Number.isNaN(baseDate)) return null;
+      let monthIndex = lastMonthIndex(post.subjectLine);
+      if (monthIndex === null) monthIndex = lastMonthIndex(post.filename);
+      if (monthIndex === null) monthIndex = baseDate.getUTCMonth();
+      return new Date(Date.UTC(baseDate.getUTCFullYear(), monthIndex, 1));
+    }
+
+    function coverageYear(post) {
+      const d = coverageDate(post);
+      return d ? d.getUTCFullYear().toString() : null;
+    }
+
+    function daysLateValue(post) {
+      if (!post.date || !post.postedDate) return null;
+      const coverDate = new Date(post.date);
+      const endOfMonth = new Date(coverDate.getUTCFullYear(), coverDate.getUTCMonth() + 1, 0);
+      const posted = new Date(post.postedDate);
+      const diff = Math.round((posted - endOfMonth) / (1000 * 60 * 60 * 24));
+      return Number.isNaN(diff) ? null : diff;
+    }
+
+    function monthlySeries(posts, year, metricFn) {
+      const sums = Array(12).fill(0);
+      const counts = Array(12).fill(0);
+      for (const post of posts) {
+        const d = coverageDate(post);
+        if (!d || coverageYear(post) !== year) continue;
+        const value = metricFn(post);
+        if (value === null || value === undefined || Number.isNaN(value)) continue;
+        const month = d.getUTCMonth();
+        sums[month] += value;
+        counts[month] += 1;
+      }
+      return sums.map((sum, i) => (counts[i] ? Number((sum / counts[i]).toFixed(2)) : null));
+    }
+
+    function buildDataset(year, index, latestYear, posts, metricFn) {
+      const data = monthlySeries(posts, year, metricFn);
+      const isLatest = year === latestYear;
+      const color = isLatest ? ACCENT : COLORS[index % COLORS.length];
+      return {
+        label: year,
+        data,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: isLatest ? 3 : 1.5,
+        pointRadius: isLatest ? 3 : 2,
+        tension: 0.3,
+        spanGaps: true,
+      };
+    }
+
+    const activeCharts = [];
+    function destroyCharts() {
+      while (activeCharts.length) activeCharts.pop().destroy();
+    }
+
+    function renderCharts(posts, selectedYears, latestYear, yearsOrder) {
+      destroyCharts();
+      const years = yearsOrder.filter(year => selectedYears.has(year));
+      metrics.forEach(metric => {
+        const datasets = years.map((year, index) => buildDataset(year, index, latestYear, posts, metric.fn));
+        const chart = new Chart(document.getElementById(metric.id), {
+          type: 'line',
+          data: { labels: MONTH_LABELS, datasets },
+          options: mergeOpts({ plugins: { legend: { display: true } } }),
+        });
+        activeCharts.push(chart);
+      });
+    }
+
+    function buildYearSelectors(years, latestYear, selectedYears, onToggle) {
+      const container = document.getElementById('yearSelectors');
+      container.innerHTML = '';
+      for (const year of years) {
+        const label = document.createElement('label');
+        label.className = `year-toggle${year === latestYear ? ' highlight' : ''}`;
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = selectedYears.has(year);
+        input.dataset.year = year;
+        input.addEventListener('change', () => onToggle(year, input.checked));
+        const span = document.createElement('span');
+        span.textContent = year;
+        label.appendChild(input);
+        label.appendChild(span);
+        container.appendChild(label);
+      }
+    }
+
+    async function main() {
+      let data = null;
+      try {
+        const res = await fetch('./analysis.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        data = await res.json();
+      } catch (e) {
+        document.body.innerHTML = `<div class="loading error-text">Failed to load analysis.json: ${e.message}<br>Run "bun run deep-analyze" first.</div>`;
+        return;
+      }
+
+      const posts = data.posts || [];
+      const years = [...new Set(posts.map(coverageYear))].filter(Boolean).sort();
+      if (!years.length) {
+        document.body.innerHTML = '<div class="loading">No posts found in analysis.json.</div>';
+        return;
+      }
+
+      const latestYear = years[years.length - 1];
+      const selectedYears = new Set(years.slice(-2));
+
+      function refresh() {
+        renderCharts(posts, selectedYears, latestYear, years);
+      }
+
+      function handleToggle(year, checked) {
+        if (checked) selectedYears.add(year); else selectedYears.delete(year);
+        if (!selectedYears.size) selectedYears.add(latestYear);
+        buildYearSelectors(years, latestYear, selectedYears, handleToggle);
+        refresh();
+      }
+
+      buildYearSelectors(years, latestYear, selectedYears, handleToggle);
+      refresh();
+    }
+
+    main();
+  </script>
+</body>
+</html>
