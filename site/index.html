@@ -185,6 +185,31 @@
       <canvas id="daysLateChart"></canvas>
     </div>
 
+    <div class="card" id="deliveriesCard">
+      <h2>Deliveries vs Opens (Substack)</h2>
+      <canvas id="deliveriesChart"></canvas>
+    </div>
+
+    <div class="card" id="openRateCard">
+      <h2>Open Rate (Substack)</h2>
+      <canvas id="openRateChart"></canvas>
+    </div>
+
+    <div class="card" id="firstOpenCard">
+      <h2>Time to First Open (Minutes)</h2>
+      <canvas id="firstOpenChart"></canvas>
+    </div>
+
+    <div class="card" id="subscriberCard">
+      <h2>Subscriber Growth</h2>
+      <canvas id="subscriberGrowthChart"></canvas>
+    </div>
+
+    <div class="card full" id="openCountriesCard">
+      <h2>Top Open Countries</h2>
+      <canvas id="openCountriesChart"></canvas>
+    </div>
+
     <div class="card full">
       <h2>Publication Timeline</h2>
       <p class="description">When each newsletter was actually sent, with subject line and subtitle.</p>
@@ -257,6 +282,25 @@
     function filterByYear(arr, year, yearFn) {
       if (year === 'all') return arr;
       return arr.filter(item => yearFn(item) === year);
+    }
+
+    function monthLabel(key) {
+      const [year, month] = key.split('-').map(Number);
+      const date = new Date(Date.UTC(year, month - 1, 1));
+      return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    }
+
+    function filterMonthEntries(monthMap, year) {
+      const entries = Object.entries(monthMap || {}).map(([key, value]) => ({ key, value }));
+      const filtered = year === 'all' ? entries : entries.filter(e => e.key.startsWith(year));
+      return filtered.sort((a, b) => a.key.localeCompare(b.key));
+    }
+
+    function substackYearFromPost(post) {
+      if (post.coverageMonth) return post.coverageMonth.slice(0, 4);
+      if (post.postDate) return post.postDate.slice(0, 4);
+      if (post.emailSentAt) return post.emailSentAt.slice(0, 4);
+      return null;
     }
 
     function destroyCharts() {
@@ -449,7 +493,84 @@
         options: mergeOpts({ plugins: { legend: { display: false } } }),
       });
 
-      // 10. Publication Timeline table
+      // 10. Substack analytics
+      const substackCards = ['deliveriesCard', 'openRateCard', 'firstOpenCard', 'subscriberCard', 'openCountriesCard'];
+      if (!data.substack) {
+        substackCards.forEach(id => { const card = document.getElementById(id); if (card) card.style.display = 'none'; });
+      } else {
+        substackCards.forEach(id => { const card = document.getElementById(id); if (card) card.style.display = ''; });
+        const monthlyEntries = filterMonthEntries(data.substack.monthly, year);
+        const monthLabels = monthlyEntries.map(entry => monthLabel(entry.key));
+        const deliveries = monthlyEntries.map(entry => entry.value.delivered);
+        const uniqueOpeners = monthlyEntries.map(entry => entry.value.uniqueOpeners);
+        const openRates = monthlyEntries.map(entry => entry.value.openRate !== null ? Math.round(entry.value.openRate * 1000) / 10 : null);
+        const avgOpenLag = monthlyEntries.map(entry => entry.value.avgOpenLagMinutes);
+
+        makeChart('deliveriesChart', {
+          type: 'line',
+          data: {
+            labels: monthLabels,
+            datasets: [
+              { label: 'Delivered', data: deliveries, borderColor: '#79c0ff', backgroundColor: '#79c0ff33', tension: 0.3, fill: true },
+              { label: 'Unique Opens', data: uniqueOpeners, borderColor: '#3fb950', backgroundColor: '#3fb95033', tension: 0.3, fill: true },
+            ],
+          },
+          options: mergeOpts({}),
+        });
+
+        makeChart('openRateChart', {
+          type: 'line',
+          data: {
+            labels: monthLabels,
+            datasets: [{ label: 'Open Rate %', data: openRates, borderColor: '#d29922', backgroundColor: '#d2992233', tension: 0.3, fill: true }],
+          },
+          options: mergeOpts({ scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: '%', color: '#8b949e' }, max: 100 } } }),
+        });
+
+        makeChart('firstOpenChart', {
+          type: 'line',
+          data: {
+            labels: monthLabels,
+            datasets: [{ label: 'Minutes', data: avgOpenLag, borderColor: '#bc8cff', backgroundColor: '#bc8cff33', tension: 0.3, fill: true }],
+          },
+          options: mergeOpts({}),
+        });
+
+        const subscriberEntries = filterMonthEntries(data.substack.subscribers, year);
+        const subscriberLabels = subscriberEntries.map(entry => monthLabel(entry.key));
+        makeChart('subscriberGrowthChart', {
+          type: 'line',
+          data: {
+            labels: subscriberLabels,
+            datasets: [
+              { label: 'Total Subscribers', data: subscriberEntries.map(e => e.value.total), borderColor: '#f0883e', backgroundColor: '#f0883e22', tension: 0.3, fill: true },
+              { label: 'Active Subscribers', data: subscriberEntries.map(e => e.value.active), borderColor: '#58a6ff', backgroundColor: '#58a6ff22', tension: 0.3, fill: true },
+            ],
+          },
+          options: mergeOpts({}),
+        });
+
+        const countryTotals = {};
+        const postsForYear = filterByYear(Object.values(data.substack.posts), year, substackYearFromPost);
+        postsForYear.forEach(post => {
+          Object.entries(post.opensByCountry || {}).forEach(([country, count]) => {
+            countryTotals[country] = (countryTotals[country] || 0) + count;
+          });
+        });
+        const topCountries = Object.entries(countryTotals)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+        makeChart('openCountriesChart', {
+          type: 'bar',
+          data: {
+            labels: topCountries.map(([country]) => country),
+            datasets: [{ label: 'Open Events', data: topCountries.map(([, count]) => count), backgroundColor: '#79c0ff88', borderColor: '#79c0ff', borderWidth: 1 }],
+          },
+          options: mergeOpts({ plugins: { legend: { display: false } }, indexAxis: 'y' }),
+        });
+      }
+
+      // 11. Publication Timeline table
       const pubBody = document.querySelector('#publicationTable tbody');
       pubBody.innerHTML = '';
       let lastPosted = null;

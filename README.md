@@ -44,6 +44,27 @@ output/                 All generated files (gitignored)
   combined.md           Auto-generated combined markdown of all posts
 ```
 
+## Substack Analytics Export
+
+The newsletter UI also supports Substack delivery/open analytics. Place the Substack export in:
+
+```
+substack_data_export/
+  posts.csv
+  email_list.kahvi.csv
+  posts/
+    <post_id>.delivers.csv
+    <post_id>.opens.csv
+```
+
+Then run:
+
+```sh
+bun run deep-analyze
+```
+
+`deep-analyze` now merges the Substack metrics into `output/analysis.json` and `site/analysis.json` under the `substack` key. The site reads that data to render the deliveries/opens/open-rate/subscriber charts in both the overview and comparison pages.
+
 ## Usage
 
 ### Full pipeline (recommended)

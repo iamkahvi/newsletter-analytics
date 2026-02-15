@@ -108,6 +108,26 @@
       <h2>Days Late (Avg per month)</h2>
       <canvas id="daysLateChart"></canvas>
     </div>
+
+    <div class="card" id="deliveriesCard">
+      <h2>Deliveries (Substack)</h2>
+      <canvas id="deliveriesChart"></canvas>
+    </div>
+
+    <div class="card" id="openRateCard">
+      <h2>Open Rate % (Substack)</h2>
+      <canvas id="openRateChart"></canvas>
+    </div>
+
+    <div class="card" id="openLagCard">
+      <h2>Time to First Open (Minutes)</h2>
+      <canvas id="openLagChart"></canvas>
+    </div>
+
+    <div class="card" id="subscriberCard">
+      <h2>Subscribers (Total)</h2>
+      <canvas id="subscriberChart"></canvas>
+    </div>
   </div>
 
   <script>
@@ -139,6 +159,13 @@
       { id: 'listRatioChart', label: 'List Ratio (%)', fn: p => p.listProseRatio * 100 },
       { id: 'selfRefChart', label: 'Self-References', fn: p => p.selfReferences },
       { id: 'daysLateChart', label: 'Days Late', fn: p => daysLateValue(p) },
+    ];
+
+    const substackMetrics = [
+      { id: 'deliveriesChart', label: 'Deliveries', fn: m => m.delivered },
+      { id: 'openRateChart', label: 'Open Rate %', fn: m => (m.openRate === null ? null : Math.round(m.openRate * 1000) / 10) },
+      { id: 'openLagChart', label: 'Open Lag', fn: m => m.avgOpenLagMinutes },
+      { id: 'subscriberChart', label: 'Subscribers', fn: m => m.total, source: 'subscribers' },
     ];
 
     function mergeOpts(overrides) {
@@ -200,6 +227,20 @@
       return sums.map((sum, i) => (counts[i] ? Number((sum / counts[i]).toFixed(2)) : null));
     }
 
+    function monthlyMapSeries(monthlyMap, year, metricFn) {
+      const series = Array(12).fill(null);
+      if (!monthlyMap) return series;
+      Object.entries(monthlyMap).forEach(([key, value]) => {
+        if (!key.startsWith(year)) return;
+        const [, month] = key.split('-');
+        const index = Number(month) - 1;
+        if (index < 0 || index > 11) return;
+        const metricValue = metricFn(value);
+        series[index] = metricValue === undefined || Number.isNaN(metricValue) ? null : metricValue;
+      });
+      return series;
+    }
+
     function buildDataset(year, index, latestYear, posts, metricFn) {
       const data = monthlySeries(posts, year, metricFn);
       const isLatest = year === latestYear;
@@ -221,11 +262,43 @@
       while (activeCharts.length) activeCharts.pop().destroy();
     }
 
-    function renderCharts(posts, selectedYears, latestYear, yearsOrder) {
+    function renderCharts(posts, selectedYears, latestYear, yearsOrder, substack) {
       destroyCharts();
       const years = yearsOrder.filter(year => selectedYears.has(year));
       metrics.forEach(metric => {
         const datasets = years.map((year, index) => buildDataset(year, index, latestYear, posts, metric.fn));
+        const chart = new Chart(document.getElementById(metric.id), {
+          type: 'line',
+          data: { labels: MONTH_LABELS, datasets },
+          options: mergeOpts({ plugins: { legend: { display: true } } }),
+        });
+        activeCharts.push(chart);
+      });
+
+      const substackCards = ['deliveriesCard', 'openRateCard', 'openLagCard', 'subscriberCard'];
+      if (!substack) {
+        substackCards.forEach(id => { const card = document.getElementById(id); if (card) card.style.display = 'none'; });
+        return;
+      }
+
+      substackCards.forEach(id => { const card = document.getElementById(id); if (card) card.style.display = ''; });
+      substackMetrics.forEach(metric => {
+        const map = metric.source === 'subscribers' ? substack.subscribers : substack.monthly;
+        const datasets = years.map((year, index) => {
+          const data = monthlyMapSeries(map, year, metric.fn);
+          const isLatest = year === latestYear;
+          const color = isLatest ? ACCENT : COLORS[index % COLORS.length];
+          return {
+            label: year,
+            data,
+            borderColor: color,
+            backgroundColor: color,
+            borderWidth: isLatest ? 3 : 1.5,
+            pointRadius: isLatest ? 3 : 2,
+            tension: 0.3,
+            spanGaps: true,
+          };
+        });
         const chart = new Chart(document.getElementById(metric.id), {
           type: 'line',
           data: { labels: MONTH_LABELS, datasets },
@@ -266,7 +339,10 @@
       }
 
       const posts = data.posts || [];
-      const years = [...new Set(posts.map(coverageYear))].filter(Boolean).sort();
+      const substackYears = data.substack
+        ? [...new Set(Object.keys(data.substack.monthly || {}).map(key => key.slice(0, 4)))].filter(Boolean)
+        : [];
+      const years = [...new Set([...posts.map(coverageYear), ...substackYears])].filter(Boolean).sort();
       if (!years.length) {
         document.body.innerHTML = '<div class="loading">No posts found in analysis.json.</div>';
         return;
@@ -276,7 +352,7 @@
       const selectedYears = new Set(years.slice(-2));
 
       function refresh() {
-        renderCharts(posts, selectedYears, latestYear, years);
+        renderCharts(posts, selectedYears, latestYear, years, data.substack);
       }
 
       function handleToggle(year, checked) {

@@ -33,6 +33,47 @@ interface PostAnalysis {
   tfidfTerms: Array<{ term: string; score: number }>;
 }
 
+interface SubstackPostAnalytics {
+  postId: string;
+  slug: string;
+  title: string | null;
+  subtitle: string | null;
+  postDate: string | null;
+  emailSentAt: string | null;
+  delivered: number;
+  deliveredActive: number;
+  openEvents: number;
+  uniqueOpeners: number;
+  openRate: number | null;
+  firstOpenAt: string | null;
+  openLagMinutes: number | null;
+  opensByCountry: Record<string, number>;
+  opensByDevice: Record<string, number>;
+  opensByClient: Record<string, number>;
+  coverageMonth: string | null;
+}
+
+interface SubstackMonthlySummary {
+  delivered: number;
+  uniqueOpeners: number;
+  openEvents: number;
+  openRate: number | null;
+  avgOpenLagMinutes: number | null;
+}
+
+interface SubstackSubscriberSummary {
+  newTotal: number;
+  newActive: number;
+  total: number;
+  active: number;
+}
+
+interface SubstackData {
+  posts: Record<string, SubstackPostAnalytics>;
+  monthly: Record<string, SubstackMonthlySummary>;
+  subscribers: Record<string, SubstackSubscriberSummary>;
+}
+
 interface AnalysisOutput {
   posts: PostAnalysis[];
   global: {
@@ -48,9 +89,25 @@ interface AnalysisOutput {
     >;
     linkRot: Array<{ url: string; status: number | "error"; source: string }>;
   };
+  substack?: SubstackData;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
+
+const MONTH_NAMES = [
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
+];
 
 function getMonthNumber(month: string): number {
   const months: Record<string, number> = {
@@ -68,6 +125,96 @@ function getMonthNumber(month: string): number {
     december: 12,
   };
   return months[month.toLowerCase()] ?? -1;
+}
+
+function lastMonthIndex(text: string | null | undefined): number | null {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  let lastPos = -1;
+  let found: number | null = null;
+  MONTH_NAMES.forEach((name, index) => {
+    const pos = lower.lastIndexOf(name);
+    if (pos > lastPos) {
+      lastPos = pos;
+      found = index;
+    }
+  });
+  return found;
+}
+
+function coverageMonthFromMeta(
+  baseDate: string | null,
+  title: string | null,
+  slug: string | null
+): string | null {
+  if (!baseDate) return null;
+  const parsed = new Date(baseDate);
+  if (Number.isNaN(parsed.getTime())) return null;
+  let monthIndex = lastMonthIndex(title);
+  if (monthIndex === null) monthIndex = lastMonthIndex(slug);
+  if (monthIndex === null) monthIndex = parsed.getUTCMonth();
+  const year = parsed.getUTCFullYear();
+  return `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+}
+
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let current = "";
+  let row: string[] = [];
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        current += '"';
+        i++;
+        continue;
+      }
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (!inQuotes && (char === ',' || char === '\n')) {
+      row.push(current);
+      current = "";
+      if (char === '\n') {
+        if (row.length > 1 || row.some((cell) => cell.length > 0)) {
+          rows.push(row);
+        }
+        row = [];
+      }
+      continue;
+    }
+
+    if (!inQuotes && char === '\r') {
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current.length > 0 || row.length) {
+    row.push(current);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function parseCsvObjects(text: string): Array<Record<string, string>> {
+  const rows = parseCsv(text);
+  if (!rows.length) return [];
+  const headers = rows[0];
+  return rows.slice(1).map((cells) => {
+    const obj: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      obj[header] = cells[index] ?? "";
+    });
+    return obj;
+  });
 }
 
 function parseDateFromFilename(filename: string): string | null {
@@ -323,6 +470,190 @@ async function checkLinkRot(
   return results;
 }
 
+function bucketDevice(deviceType: string, userAgent: string): string {
+  const trimmed = deviceType.trim();
+  if (trimmed) return trimmed;
+  const ua = userAgent.toLowerCase();
+  if (ua.includes("iphone") || ua.includes("android") || ua.includes("mobile")) {
+    return "Mobile";
+  }
+  if (ua.includes("ipad") || ua.includes("tablet")) {
+    return "Tablet";
+  }
+  return "Desktop/Other";
+}
+
+function incrementCounter(map: Record<string, number>, key: string) {
+  map[key] = (map[key] || 0) + 1;
+}
+
+async function analyzeSubstack(): Promise<SubstackData | null> {
+  const postsCsv = Bun.file("substack_data_export/posts.csv");
+  if (!(await postsCsv.exists())) return null;
+
+  const postRows = parseCsvObjects(await postsCsv.text());
+  const published = postRows.filter((row) => row.is_published === "true");
+
+  const posts: Record<string, SubstackPostAnalytics> = {};
+  const monthlyAgg = new Map<
+    string,
+    { delivered: number; uniqueOpeners: number; openEvents: number; openLagSum: number; openLagCount: number }
+  >();
+
+  for (const row of published) {
+    const rawId = row.post_id || "";
+    const [postId, ...slugParts] = rawId.split(".");
+    const slug = slugParts.join(".");
+    if (!postId) continue;
+
+    const title = row.title || null;
+    const subtitle = row.subtitle || null;
+    const postDate = row.post_date || null;
+    const emailSentAt = row.email_sent_at || null;
+    const coverageMonth = coverageMonthFromMeta(postDate || emailSentAt, title, slug);
+
+    const deliversPath = `substack_data_export/posts/${postId}.delivers.csv`;
+    const opensPath = `substack_data_export/posts/${postId}.opens.csv`;
+
+    let delivered = 0;
+    let deliveredActive = 0;
+
+    const deliversFile = Bun.file(deliversPath);
+    if (await deliversFile.exists()) {
+      const deliverRows = parseCsvObjects(await deliversFile.text());
+      delivered = deliverRows.length;
+      deliveredActive = deliverRows.filter((d) => d.active_subscription === "true").length;
+    }
+
+    let openEvents = 0;
+    let uniqueOpeners = 0;
+    let firstOpenAt: string | null = null;
+    const opensByCountry: Record<string, number> = {};
+    const opensByDevice: Record<string, number> = {};
+    const opensByClient: Record<string, number> = {};
+
+    const opensFile = Bun.file(opensPath);
+    if (await opensFile.exists()) {
+      const openRows = parseCsvObjects(await opensFile.text());
+      openEvents = openRows.length;
+      const uniqueEmails = new Set<string>();
+      for (const open of openRows) {
+        if (open.email) uniqueEmails.add(open.email);
+        const country = open.country?.trim() || "Unknown";
+        const device = bucketDevice(open.device_type || "", open.user_agent || "");
+        const client = open.client_type?.trim() || "Unknown";
+        incrementCounter(opensByCountry, country);
+        incrementCounter(opensByDevice, device);
+        incrementCounter(opensByClient, client);
+        if (open.timestamp) {
+          if (!firstOpenAt || open.timestamp < firstOpenAt) {
+            firstOpenAt = open.timestamp;
+          }
+        }
+      }
+      uniqueOpeners = uniqueEmails.size;
+    }
+
+    let openLagMinutes: number | null = null;
+    if (firstOpenAt && emailSentAt) {
+      const first = new Date(firstOpenAt).getTime();
+      const sent = new Date(emailSentAt).getTime();
+      if (!Number.isNaN(first) && !Number.isNaN(sent)) {
+        openLagMinutes = Math.round(((first - sent) / 60000) * 100) / 100;
+      }
+    }
+
+    const openRate = delivered ? Math.round((uniqueOpeners / delivered) * 1000) / 1000 : null;
+
+    posts[postId] = {
+      postId,
+      slug,
+      title,
+      subtitle,
+      postDate,
+      emailSentAt,
+      delivered,
+      deliveredActive,
+      openEvents,
+      uniqueOpeners,
+      openRate,
+      firstOpenAt,
+      openLagMinutes,
+      opensByCountry,
+      opensByDevice,
+      opensByClient,
+      coverageMonth,
+    };
+
+    if (coverageMonth) {
+      if (!monthlyAgg.has(coverageMonth)) {
+        monthlyAgg.set(coverageMonth, {
+          delivered: 0,
+          uniqueOpeners: 0,
+          openEvents: 0,
+          openLagSum: 0,
+          openLagCount: 0,
+        });
+      }
+      const bucket = monthlyAgg.get(coverageMonth)!;
+      bucket.delivered += delivered;
+      bucket.uniqueOpeners += uniqueOpeners;
+      bucket.openEvents += openEvents;
+      if (openLagMinutes !== null) {
+        bucket.openLagSum += openLagMinutes;
+        bucket.openLagCount += 1;
+      }
+    }
+  }
+
+  const monthly: Record<string, SubstackMonthlySummary> = {};
+  for (const [month, bucket] of monthlyAgg.entries()) {
+    monthly[month] = {
+      delivered: bucket.delivered,
+      uniqueOpeners: bucket.uniqueOpeners,
+      openEvents: bucket.openEvents,
+      openRate: bucket.delivered ? Math.round((bucket.uniqueOpeners / bucket.delivered) * 1000) / 1000 : null,
+      avgOpenLagMinutes: bucket.openLagCount
+        ? Math.round((bucket.openLagSum / bucket.openLagCount) * 100) / 100
+        : null,
+    };
+  }
+
+  const subscribersFile = Bun.file("substack_data_export/email_list.kahvi.csv");
+  const subscribers: Record<string, SubstackSubscriberSummary> = {};
+  if (await subscribersFile.exists()) {
+    const subscriberRows = parseCsvObjects(await subscribersFile.text());
+    const newByMonth = new Map<string, { newTotal: number; newActive: number }>();
+    for (const row of subscriberRows) {
+      if (!row.created_at) continue;
+      const created = new Date(row.created_at);
+      if (Number.isNaN(created.getTime())) continue;
+      const key = `${created.getUTCFullYear()}-${String(created.getUTCMonth() + 1).padStart(2, "0")}`;
+      if (!newByMonth.has(key)) newByMonth.set(key, { newTotal: 0, newActive: 0 });
+      const bucket = newByMonth.get(key)!;
+      bucket.newTotal += 1;
+      if (row.active_subscription === "true") bucket.newActive += 1;
+    }
+
+    const sortedKeys = [...newByMonth.keys()].sort();
+    let total = 0;
+    let active = 0;
+    for (const key of sortedKeys) {
+      const bucket = newByMonth.get(key)!;
+      total += bucket.newTotal;
+      active += bucket.newActive;
+      subscribers[key] = {
+        newTotal: bucket.newTotal,
+        newActive: bucket.newActive,
+        total,
+        active,
+      };
+    }
+  }
+
+  return { posts, monthly, subscribers };
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -525,6 +856,15 @@ async function main() {
     console.log("Skipping link rot check (--skip-links)");
   }
 
+  // ── Substack analytics ─────────────────────────────────────────────
+
+  const substack = await analyzeSubstack();
+  if (substack) {
+    console.log(`Loaded Substack analytics for ${Object.keys(substack.posts).length} posts`);
+  } else {
+    console.log("No Substack export found (substack_data_export/posts.csv)");
+  }
+
   // ── Write output ───────────────────────────────────────────────────
 
   const output: AnalysisOutput = {
@@ -535,6 +875,7 @@ async function main() {
       topEntitiesOverTime,
       linkRot,
     },
+    ...(substack ? { substack } : {}),
   };
 
   await mkdir("output", { recursive: true });
