@@ -1,4 +1,4 @@
-# newsletter_backup
+# newsletter-analytics
 
 Backup and analysis pipeline for [newsletter.kahvipatel.com](https://www.newsletter.kahvipatel.com) (Substack).
 
