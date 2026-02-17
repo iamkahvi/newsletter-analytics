@@ -25,6 +25,14 @@
       border-bottom: 1px solid #21262d;
       padding-bottom: 6px;
     }
+    .section-title {
+      color: var(--accent);
+      font-size: 16px;
+      margin-top: 26px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #21262d;
+      padding-bottom: 6px;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
@@ -136,15 +144,38 @@
 
   <div id="stats" class="stat-row"></div>
 
-  <div class="grid">
+  <h2 class="section-title">Post & Monthly Trends</h2>
+  <div class="grid" id="mainGrid">
     <div class="card">
-      <h2>Word Count Over Time</h2>
+      <h2>Word Count (Per Post)</h2>
       <canvas id="wordCountChart"></canvas>
     </div>
 
     <div class="card">
-      <h2>Readability Trend (Flesch-Kincaid Grade)</h2>
+      <h2>Monthly Word Volume</h2>
+      <p class="description">Total words per month with 3-month moving average.</p>
+      <canvas id="monthlyWordChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Monthly Post Count</h2>
+      <canvas id="postCountChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Readability (Per Post, Flesch-Kincaid Grade)</h2>
       <canvas id="readabilityChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Readability Trend (Monthly Avg)</h2>
+      <canvas id="readabilityMonthlyChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Sentiment Trend (Monthly Avg)</h2>
+      <p class="description">Comparative AFINN score; above zero is more positive.</p>
+      <canvas id="sentimentChart"></canvas>
     </div>
 
     <div class="card">
@@ -172,6 +203,11 @@
       <canvas id="entityChart"></canvas>
     </div>
 
+    <div class="card full">
+      <h2>Seasonality Index (Recurring Patterns)</h2>
+      <p class="description">Index 100 = overall average across all years. Shows recurring monthly patterns in words, sentiment, and readability.</p>
+      <canvas id="seasonalityChart"></canvas>
+    </div>
 
     <div class="card">
       <h2>Self-References</h2>
@@ -284,6 +320,8 @@
       return arr.filter(item => yearFn(item) === year);
     }
 
+    const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
     function monthLabel(key) {
       const [year, month] = key.split('-').map(Number);
       const date = new Date(Date.UTC(year, month - 1, 1));
@@ -294,6 +332,72 @@
       const entries = Object.entries(monthMap || {}).map(([key, value]) => ({ key, value }));
       const filtered = year === 'all' ? entries : entries.filter(e => e.key.startsWith(year));
       return filtered.sort((a, b) => a.key.localeCompare(b.key));
+    }
+
+    function monthKeyFromPost(post) {
+      const raw = post.date || post.postedDate;
+      if (!raw) return null;
+      const parsed = new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return `${parsed.getUTCFullYear()}-${String(parsed.getUTCMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function buildMonthlyAggregate(posts, valueFn, mode = 'sum') {
+      const buckets = new Map();
+      for (const post of posts) {
+        const key = monthKeyFromPost(post);
+        if (!key) continue;
+        const value = valueFn(post);
+        if (value === null || value === undefined || Number.isNaN(value)) continue;
+        if (!buckets.has(key)) buckets.set(key, { sum: 0, count: 0 });
+        const bucket = buckets.get(key);
+        bucket.sum += value;
+        bucket.count += 1;
+      }
+      const keys = [...buckets.keys()].sort();
+      const values = keys.map(key => {
+        const bucket = buckets.get(key);
+        if (!bucket || bucket.count === 0) return null;
+        if (mode === 'avg') return Math.round((bucket.sum / bucket.count) * 100) / 100;
+        if (mode === 'count') return bucket.count;
+        return Math.round(bucket.sum * 100) / 100;
+      });
+      return { keys, labels: keys.map(monthLabel), values };
+    }
+
+    function movingAverage(values, windowSize) {
+      return values.map((_, index) => {
+        const start = Math.max(0, index - windowSize + 1);
+        const slice = values.slice(start, index + 1).filter(v => v !== null);
+        if (!slice.length) return null;
+        const avg = slice.reduce((sum, val) => sum + val, 0) / slice.length;
+        return Math.round(avg * 100) / 100;
+      });
+    }
+
+    function buildSeasonalityIndex(posts, valueFn) {
+      const sums = Array(12).fill(0);
+      const counts = Array(12).fill(0);
+      const allValues = [];
+      for (const post of posts) {
+        const key = monthKeyFromPost(post);
+        if (!key) continue;
+        const value = valueFn(post);
+        if (value === null || value === undefined || Number.isNaN(value)) continue;
+        const monthIndex = Number(key.split('-')[1]) - 1;
+        if (monthIndex < 0 || monthIndex > 11) continue;
+        sums[monthIndex] += value;
+        counts[monthIndex] += 1;
+        allValues.push(value);
+      }
+      const overallAvg = allValues.length
+        ? allValues.reduce((sum, val) => sum + val, 0) / allValues.length
+        : 0;
+      return sums.map((sum, index) => {
+        if (!counts[index] || overallAvg === 0) return null;
+        const avg = sum / counts[index];
+        return Math.round((avg / overallAvg) * 1000) / 10;
+      });
     }
 
     function substackYearFromPost(post) {
@@ -319,11 +423,20 @@
       const posts = filterByYear(data.posts, year, postYear);
       const labels = posts.map(p => shortName(p.filename));
 
+      const monthlyWords = buildMonthlyAggregate(posts, p => p.wordCount, 'sum');
+      const monthlyWordAvg = movingAverage(monthlyWords.values, 3);
+      const monthlyPostCounts = buildMonthlyAggregate(posts, () => 1, 'count');
+      const monthlyReadability = buildMonthlyAggregate(posts, p => p.readability, 'avg');
+      const monthlySentiment = buildMonthlyAggregate(posts, p => p.sentiment?.comparative, 'avg');
+
+      const seasonalityWords = buildSeasonalityIndex(posts, p => p.wordCount);
+      const seasonalityReadability = buildSeasonalityIndex(posts, p => p.readability);
+      const seasonalitySentiment = buildSeasonalityIndex(posts, p => p.sentiment?.comparative);
+
       // Filter vocab growth and entity data by year
-      const vg = filterByYear(data.global.vocabGrowth, year, v => {
-        const match = v.post.match(/(\d{4})/);
-        return match ? match[1] : null;
-      });
+      const vg = year === 'all'
+        ? data.global.vocabGrowth
+        : (data.global.perYearVocabGrowth?.[year] || []);
 
       // Summary stats
       const totalWords = posts.reduce((s, p) => s + p.wordCount, 0);
@@ -352,11 +465,13 @@
         const dateStr = p.postedDate ? new Date(p.postedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
         return `<li><a href="${url}" target="_blank" rel="noopener">${label}</a>${dateStr ? `<span class="post-date">${dateStr}</span>` : ''}</li>`;
       }).join('');
+      const globalVocab = data.global.vocabGrowth?.length ? data.global.vocabGrowth.at(-1).cumulativeUnique : 0;
       document.getElementById('stats').innerHTML = `
         <div class="stat"><div class="label">Total Words</div><div class="value">${totalWords.toLocaleString()}</div></div>
         <div class="stat"><div class="label">Avg Words/Post</div><div class="value">${avgWords.toLocaleString()}</div></div>
         <div class="stat"><div class="label">Avg Grade Level</div><div class="value">${avgReadability}</div></div>
-        <div class="stat"><div class="label">Unique Vocab</div><div class="value">${(vg.length ? vg.at(-1).cumulativeUnique : 0).toLocaleString()}</div></div>
+        <div class="stat"><div class="label">Unique Vocab (Year)</div><div class="value">${(vg.length ? vg.at(-1).cumulativeUnique : 0).toLocaleString()}</div></div>
+        <div class="stat"><div class="label">Unique Vocab (All)</div><div class="value">${globalVocab.toLocaleString()}</div></div>
         <div class="stat"><div class="label">Self-References</div><div class="value">${totalSelfRefs}</div></div>
       `;
 
@@ -370,6 +485,29 @@
         options: mergeOpts({ plugins: { legend: { display: false } } }),
       });
 
+      // 1b. Monthly Word Volume
+      makeChart('monthlyWordChart', {
+        type: 'line',
+        data: {
+          labels: monthlyWords.labels,
+          datasets: [
+            { label: 'Total Words', data: monthlyWords.values, borderColor: '#f0883e', backgroundColor: '#f0883e22', tension: 0.3, fill: true },
+            { label: '3-mo Avg', data: monthlyWordAvg, borderColor: '#79c0ff', backgroundColor: '#79c0ff22', tension: 0.3, fill: true },
+          ],
+        },
+        options: mergeOpts({}),
+      });
+
+      // 1c. Monthly Post Count
+      makeChart('postCountChart', {
+        type: 'bar',
+        data: {
+          labels: monthlyPostCounts.labels,
+          datasets: [{ label: 'Posts', data: monthlyPostCounts.values, backgroundColor: '#3fb95088', borderColor: '#3fb950', borderWidth: 1 }],
+        },
+        options: mergeOpts({ plugins: { legend: { display: false } } }),
+      });
+
       // 2. Readability
       makeChart('readabilityChart', {
         type: 'line',
@@ -378,6 +516,26 @@
           datasets: [{ label: 'Grade Level', data: posts.map(p => p.readability), borderColor: '#3fb950', backgroundColor: '#3fb95033', fill: true, tension: 0.3 }],
         },
         options: mergeOpts({ plugins: { legend: { display: false } } }),
+      });
+
+      // 2b. Readability (Monthly Avg)
+      makeChart('readabilityMonthlyChart', {
+        type: 'line',
+        data: {
+          labels: monthlyReadability.labels,
+          datasets: [{ label: 'Avg Grade Level', data: monthlyReadability.values, borderColor: '#3fb950', backgroundColor: '#3fb95022', fill: true, tension: 0.3 }],
+        },
+        options: mergeOpts({ plugins: { legend: { display: false } } }),
+      });
+
+      // 2c. Sentiment (Monthly Avg)
+      makeChart('sentimentChart', {
+        type: 'line',
+        data: {
+          labels: monthlySentiment.labels,
+          datasets: [{ label: 'Sentiment', data: monthlySentiment.values, borderColor: '#bc8cff', backgroundColor: '#bc8cff22', fill: true, tension: 0.3 }],
+        },
+        options: mergeOpts({ plugins: { legend: { display: false } }, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: 'Comparative', color: '#8b949e' } } } }),
       });
 
       // 3. Sentence Length
@@ -456,6 +614,20 @@
           })),
         },
         options: mergeOpts({}),
+      });
+
+      // 7b. Seasonality Index
+      makeChart('seasonalityChart', {
+        type: 'line',
+        data: {
+          labels: MONTH_LABELS,
+          datasets: [
+            { label: 'Words/Post', data: seasonalityWords, borderColor: '#f0883e', backgroundColor: '#f0883e22', tension: 0.3, spanGaps: true },
+            { label: 'Sentiment', data: seasonalitySentiment, borderColor: '#bc8cff', backgroundColor: '#bc8cff22', tension: 0.3, spanGaps: true },
+            { label: 'Readability', data: seasonalityReadability, borderColor: '#3fb950', backgroundColor: '#3fb95022', tension: 0.3, spanGaps: true },
+          ],
+        },
+        options: mergeOpts({ scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: 'Index (100 = avg)', color: '#8b949e' } } } }),
       });
 
       // 8. Self-References

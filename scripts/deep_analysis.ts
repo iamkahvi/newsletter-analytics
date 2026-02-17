@@ -28,6 +28,7 @@ interface PostAnalysis {
   listProseRatio: number;
   openingLine: string;
   readability: number;
+  sentiment: { score: number; comparative: number };
   selfReferences: number;
   namedEntities: Array<{ name: string; count: number }>;
   tfidfTerms: Array<{ term: string; score: number }>;
@@ -82,6 +83,10 @@ interface AnalysisOutput {
       cumulativeUnique: number;
       newWords: number;
     }>;
+    perYearVocabGrowth: Record<
+      string,
+      Array<{ post: string; cumulativeUnique: number; newWords: number }>
+    >;
     similarityMatrix: number[][];
     topEntitiesOverTime: Record<
       string,
@@ -266,6 +271,23 @@ function calculateReadability(text: string): number {
   const avgSentenceLength = words.length / sentences.length;
   const avgSyllablesPerWord = syllables / words.length;
   return 0.39 * avgSentenceLength + 11.8 * avgSyllablesPerWord - 15.59;
+}
+
+const sentimentAnalyzer = new natural.SentimentAnalyzer(
+  "English",
+  natural.PorterStemmer,
+  "afinn"
+);
+const sentimentTokenizer = new natural.WordTokenizer();
+
+function analyzeSentiment(text: string): { score: number; comparative: number } {
+  const tokens = sentimentTokenizer.tokenize(stripMarkdown(text));
+  if (!tokens.length) return { score: 0, comparative: 0 };
+  const score = sentimentAnalyzer.getSentiment(tokens);
+  return {
+    score,
+    comparative: score / tokens.length,
+  };
 }
 
 function extractLinks(content: string): Array<{ text: string; url: string }> {
@@ -720,6 +742,8 @@ async function main() {
   const allLinksForRotCheck: Array<{ url: string; source: string }> = [];
   const cumulativeVocab = new Set<string>();
   const vocabGrowth: AnalysisOutput["global"]["vocabGrowth"] = [];
+  const perYearVocabGrowth: AnalysisOutput["global"]["perYearVocabGrowth"] = {};
+  const perYearVocab = new Map<string, Set<string>>();
   const entityTracker = new Map<string, Map<string, number>>();
 
   for (let i = 0; i < mdFiles.length; i++) {
@@ -756,7 +780,7 @@ async function main() {
       }
     }
 
-    // Vocab growth
+    // Vocab growth (global + per-year)
     const prevSize = cumulativeVocab.size;
     for (const token of tokens) cumulativeVocab.add(token);
     vocabGrowth.push({
@@ -765,10 +789,27 @@ async function main() {
       newWords: cumulativeVocab.size - prevSize,
     });
 
+    const postDate = parseDateFromFilename(file.name);
+    const yearKey = postDate ? postDate.slice(0, 4) : null;
+    if (yearKey) {
+      if (!perYearVocab.has(yearKey)) perYearVocab.set(yearKey, new Set());
+      const yearSet = perYearVocab.get(yearKey)!;
+      const prevYearSize = yearSet.size;
+      for (const token of tokens) yearSet.add(token);
+      if (!perYearVocabGrowth[yearKey]) perYearVocabGrowth[yearKey] = [];
+      perYearVocabGrowth[yearKey].push({
+        post: file.name,
+        cumulativeUnique: yearSet.size,
+        newWords: yearSet.size - prevYearSize,
+      });
+    }
+
     // Word count via natural tokenizer
     const tokenizer = new natural.WordTokenizer();
     const allTokens = tokenizer.tokenize(stripMarkdown(content));
     const wordCount = allTokens.length;
+
+    const sentiment = analyzeSentiment(content);
 
     const meta = metaByFilename.get(file.name);
 
@@ -788,6 +829,7 @@ async function main() {
       listProseRatio: Math.round(listProseRatio(content) * 1000) / 1000,
       openingLine: openingLine(content),
       readability: Math.round(calculateReadability(content) * 100) / 100,
+      sentiment,
       selfReferences: selfReferenceCount(content),
       namedEntities: entities,
       tfidfTerms,
@@ -871,6 +913,7 @@ async function main() {
     posts,
     global: {
       vocabGrowth,
+      perYearVocabGrowth,
       similarityMatrix,
       topEntitiesOverTime,
       linkRot,

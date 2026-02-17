@@ -65,15 +65,29 @@
 </head>
 <body>
   <h1>kahvi's newsletter analysis</h1>
-  <p style="color: #8b949e; margin-bottom: 8px;">Year-over-year comparison (monthly averages, superimposed)</p>
+  <p style="color: #8b949e; margin-bottom: 8px;">Year-over-year comparison (yearly totals + monthly averages, superimposed)</p>
   <div style="margin-bottom: 16px;">
     <a href="./index.html" style="color: #8b949e; text-decoration: none; font-size: 13px;">← Back to overview</a>
   </div>
 
-  <div id="yearSelectors" style="margin-bottom: 16px;"></div>
   <div class="legend-note">Most recent year uses the accent color and thicker line weight.</div>
 
   <div class="grid">
+    <div class="card">
+      <h2>Yearly Word Totals</h2>
+      <canvas id="yearlyWordChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Yearly Post Count</h2>
+      <canvas id="yearlyPostChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Yearly Readability (Avg)</h2>
+      <canvas id="yearlyReadabilityChart"></canvas>
+    </div>
+
     <div class="card">
       <h2>Word Count (Avg per month)</h2>
       <canvas id="wordCountChart"></canvas>
@@ -227,6 +241,26 @@
       return sums.map((sum, i) => (counts[i] ? Number((sum / counts[i]).toFixed(2)) : null));
     }
 
+    function yearlySeries(posts, years, metricFn, mode = 'avg') {
+      const sums = new Map();
+      const counts = new Map();
+      for (const post of posts) {
+        const year = coverageYear(post);
+        if (!year) continue;
+        const value = metricFn(post);
+        if (value === null || value === undefined || Number.isNaN(value)) continue;
+        sums.set(year, (sums.get(year) || 0) + value);
+        counts.set(year, (counts.get(year) || 0) + 1);
+      }
+      return years.map((year) => {
+        const total = sums.get(year) || 0;
+        const count = counts.get(year) || 0;
+        if (mode === 'sum') return Math.round(total * 100) / 100;
+        if (mode === 'count') return count;
+        return count ? Math.round((total / count) * 100) / 100 : null;
+      });
+    }
+
     function monthlyMapSeries(monthlyMap, year, metricFn) {
       const series = Array(12).fill(null);
       if (!monthlyMap) return series;
@@ -262,9 +296,38 @@
       while (activeCharts.length) activeCharts.pop().destroy();
     }
 
-    function renderCharts(posts, selectedYears, latestYear, yearsOrder, substack) {
+    function renderCharts(posts, latestYear, yearsOrder, substack) {
       destroyCharts();
-      const years = yearsOrder.filter(year => selectedYears.has(year));
+      const years = yearsOrder;
+
+      const yearlyWordTotals = yearlySeries(posts, yearsOrder, p => p.wordCount, 'sum');
+      const yearlyPostCounts = yearlySeries(posts, yearsOrder, () => 1, 'count');
+      const yearlyReadability = yearlySeries(posts, yearsOrder, p => p.readability, 'avg');
+
+      const yearlyCharts = [
+        { id: 'yearlyWordChart', label: 'Total Words', data: yearlyWordTotals, color: '#f0883e' },
+        { id: 'yearlyPostChart', label: 'Posts', data: yearlyPostCounts, color: '#3fb950' },
+        { id: 'yearlyReadabilityChart', label: 'Avg Grade', data: yearlyReadability, color: '#3fb950' },
+      ];
+
+      yearlyCharts.forEach(chartMeta => {
+        const chart = new Chart(document.getElementById(chartMeta.id), {
+          type: 'bar',
+          data: {
+            labels: yearsOrder,
+            datasets: [{
+              label: chartMeta.label,
+              data: chartMeta.data,
+              backgroundColor: `${chartMeta.color}88`,
+              borderColor: chartMeta.color,
+              borderWidth: 1,
+            }],
+          },
+          options: mergeOpts({ plugins: { legend: { display: false } } }),
+        });
+        activeCharts.push(chart);
+      });
+
       metrics.forEach(metric => {
         const datasets = years.map((year, index) => buildDataset(year, index, latestYear, posts, metric.fn));
         const chart = new Chart(document.getElementById(metric.id), {
@@ -308,25 +371,6 @@
       });
     }
 
-    function buildYearSelectors(years, latestYear, selectedYears, onToggle) {
-      const container = document.getElementById('yearSelectors');
-      container.innerHTML = '';
-      for (const year of years) {
-        const label = document.createElement('label');
-        label.className = `year-toggle${year === latestYear ? ' highlight' : ''}`;
-        const input = document.createElement('input');
-        input.type = 'checkbox';
-        input.checked = selectedYears.has(year);
-        input.dataset.year = year;
-        input.addEventListener('change', () => onToggle(year, input.checked));
-        const span = document.createElement('span');
-        span.textContent = year;
-        label.appendChild(input);
-        label.appendChild(span);
-        container.appendChild(label);
-      }
-    }
-
     async function main() {
       let data = null;
       try {
@@ -342,28 +386,17 @@
       const substackYears = data.substack
         ? [...new Set(Object.keys(data.substack.monthly || {}).map(key => key.slice(0, 4)))].filter(Boolean)
         : [];
-      const years = [...new Set([...posts.map(coverageYear), ...substackYears])].filter(Boolean).sort();
+      const years = [...new Set([...posts.map(coverageYear), ...substackYears])]
+        .filter(Boolean)
+        .filter(year => Number(year) >= 2023 && Number(year) <= 2025)
+        .sort();
       if (!years.length) {
         document.body.innerHTML = '<div class="loading">No posts found in analysis.json.</div>';
         return;
       }
 
       const latestYear = years[years.length - 1];
-      const selectedYears = new Set(years.slice(-2));
-
-      function refresh() {
-        renderCharts(posts, selectedYears, latestYear, years, data.substack);
-      }
-
-      function handleToggle(year, checked) {
-        if (checked) selectedYears.add(year); else selectedYears.delete(year);
-        if (!selectedYears.size) selectedYears.add(latestYear);
-        buildYearSelectors(years, latestYear, selectedYears, handleToggle);
-        refresh();
-      }
-
-      buildYearSelectors(years, latestYear, selectedYears, handleToggle);
-      refresh();
+      renderCharts(posts, latestYear, years, data.substack);
     }
 
     main();
