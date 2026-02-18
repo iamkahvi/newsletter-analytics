@@ -172,7 +172,7 @@
       { id: 'questionDensityChart', label: 'Question Density (%)', fn: p => p.questionDensity * 100 },
       { id: 'listRatioChart', label: 'List Ratio (%)', fn: p => p.listProseRatio * 100 },
       { id: 'selfRefChart', label: 'Self-References', fn: p => p.selfReferences },
-      { id: 'daysLateChart', label: 'Days Late', fn: p => daysLateValue(p) },
+      { id: 'daysLateChart', label: 'Days Late', fn: p => daysLateValue(p), datasetOverrides: { pointRadius: 4 } },
     ];
 
     const substackMetrics = [
@@ -275,7 +275,7 @@
       return series;
     }
 
-    function buildDataset(year, index, latestYear, posts, metricFn) {
+    function buildDataset(year, index, latestYear, posts, metricFn, datasetOverrides = {}) {
       const data = monthlySeries(posts, year, metricFn);
       const isLatest = year === latestYear;
       const color = isLatest ? ACCENT : COLORS[index % COLORS.length];
@@ -288,6 +288,7 @@
         pointRadius: isLatest ? 3 : 2,
         tension: 0.3,
         spanGaps: true,
+        ...datasetOverrides,
       };
     }
 
@@ -329,7 +330,7 @@
       });
 
       metrics.forEach(metric => {
-        const datasets = years.map((year, index) => buildDataset(year, index, latestYear, posts, metric.fn));
+        const datasets = years.map((year, index) => buildDataset(year, index, latestYear, posts, metric.fn, metric.datasetOverrides));
         const chart = new Chart(document.getElementById(metric.id), {
           type: 'line',
           data: { labels: MONTH_LABELS, datasets },

@@ -717,7 +717,12 @@ async function main() {
     return a.name.localeCompare(b.name);
   });
 
-  console.log(`Found ${mdFiles.length} posts`);
+  const filteredFiles = mdFiles.filter((file) => {
+    const date = parseDateFromFilename(file.name);
+    return !(date && date.startsWith("2024-09"));
+  });
+
+  console.log(`Found ${filteredFiles.length} posts`);
 
   // TF-IDF setup
   const TfIdf = natural.TfIdf;
@@ -726,7 +731,7 @@ async function main() {
   const rawContents: string[] = [];
 
   // First pass: read all files, build TF-IDF corpus
-  for (const file of mdFiles) {
+  for (const file of filteredFiles) {
     const content = await Bun.file(file.path).text();
     rawContents.push(content);
     const tokens = tokenize(content);
@@ -746,8 +751,8 @@ async function main() {
   const perYearVocab = new Map<string, Set<string>>();
   const entityTracker = new Map<string, Map<string, number>>();
 
-  for (let i = 0; i < mdFiles.length; i++) {
-    const file = mdFiles[i];
+  for (let i = 0; i < filteredFiles.length; i++) {
+    const file = filteredFiles[i];
     const content = rawContents[i];
     const tokens = docTokens[i];
 
@@ -842,7 +847,7 @@ async function main() {
 
   // Build TF-IDF vectors per document
   const tfidfVectors: Map<string, number>[] = [];
-  for (let i = 0; i < mdFiles.length; i++) {
+  for (let i = 0; i < filteredFiles.length; i++) {
     const vec = new Map<string, number>();
     tfidf.listTerms(i).forEach((item) => {
       vec.set(item.term, item.tfidf);
@@ -851,9 +856,9 @@ async function main() {
   }
 
   const similarityMatrix: number[][] = [];
-  for (let i = 0; i < mdFiles.length; i++) {
+  for (let i = 0; i < filteredFiles.length; i++) {
     const row: number[] = [];
-    for (let j = 0; j < mdFiles.length; j++) {
+    for (let j = 0; j < filteredFiles.length; j++) {
       const sim = i === j ? 1 : cosineSimilarity(tfidfVectors[i], tfidfVectors[j]);
       row.push(Math.round(sim * 1000) / 1000);
     }
@@ -881,7 +886,7 @@ async function main() {
   > = {};
   for (const name of topEntityNames) {
     const postMap = entityTracker.get(name)!;
-    topEntitiesOverTime[name] = mdFiles.map((f) => ({
+    topEntitiesOverTime[name] = filteredFiles.map((f) => ({
       post: f.name,
       count: postMap.get(f.name) || 0,
     }));
