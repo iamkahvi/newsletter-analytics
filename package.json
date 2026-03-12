@@ -19,10 +19,11 @@
     "site": "bun run scripts/serve.ts"
   },
   "dependencies": {
-    "@types/turndown": "^5.0.5",
+    "@types/jsdom": "^28.0.0",
     "compromise": "^14.10.1",
-    "natural": "^8.0.1",
-    "turndown": "^7.2.0"
+    "defuddle": "^0.12.0",
+    "jsdom": "^28.1.0",
+    "natural": "^8.0.1"
   },
   "devDependencies": {
     "bun-types": "^1.1.42"

@@ -1,5 +1,6 @@
 // Import required modules
-import TurndownService from "turndown";
+import { Defuddle } from "defuddle/node";
+import { JSDOM } from "jsdom";
 import { parseArgs } from "node:util";
 import { readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
@@ -24,8 +25,6 @@ const { values, positionals } = parseArgs({
 });
 
 const { mode, output } = values;
-
-const turndownService = new TurndownService();
 
 if (![Mode.LIST, Mode.LINK].includes(mode as string)) {
   console.log("Invalid mode");
@@ -99,34 +98,12 @@ function getLinesFromFile(filePath: string): string[] {
   return file.split("\n").map((line) => line.trim());
 }
 
-async function getHtml(link: string) {
-  const proc = Bun.spawn(["curl", "--silent", link], {
-    stdout: "pipe",
-  });
-  return await new Response(proc.stdout).text();
-}
-
-async function selectHtml(html: string, selector: string) {
-  const proc = Bun.spawn(["htmlq", selector], {
-    stdin: new Response(html),
-    stdout: "pipe",
-  });
-  return await new Response(proc.stdout).text();
-}
-
 async function processUrlToMarkdown(url: string): Promise<string> {
-  const html = await getHtml(url);
-
-  const selector = ".available-content";
-  const selectedHtml = await selectHtml(html, selector);
-
-  let md = turndownService.turndown(selectedHtml);
-
-  // Clean up image links wrapped in markdown link syntax
-  md = md.replace(/^\s+\[\n+(\n\s+!\[\]\(.*\))\s+\]\(.*\)/gm, "$1");
-  md = md.replace(/\[\n+(!\[\]\(.*\))\n+\]\(.*\)/g, "$1");
-
-  return md;
+  const response = await fetch(url);
+  const html = await response.text();
+  const dom = new JSDOM(html, { url });
+  const result = await Defuddle(dom, url, { markdown: true });
+  return result.content;
 }
 
 function validateUrl(url: string): boolean {
