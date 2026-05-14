@@ -698,7 +698,6 @@ async function main() {
   // Read all markdown files
   const entries = await readdir(directoryPath, {
     withFileTypes: true,
-    recursive: true,
   });
   const mdFiles = entries
     .filter((e) => e.isFile() && e.name.endsWith(".md") && e.name !== "all_newsletters.md" && e.name !== "combined.md")
