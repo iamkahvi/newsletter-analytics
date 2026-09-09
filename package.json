@@ -16,6 +16,8 @@
     "pipeline": "bun run sync && bun run fetch && bun run convert && bun run combine && bun run analyze",
     "fetch-metadata": "bun run scripts/fetch_metadata.ts",
     "inventory-images": "bun run scripts/inventory_images.ts",
+    "download-images": "bun run scripts/download_images.ts",
+    "upload-images": "bash scripts/upload_images_to_r2.sh",
     "deep-analyze": "bun run scripts/deep_analysis.ts",
     "site": "bun run scripts/serve.ts"
   },

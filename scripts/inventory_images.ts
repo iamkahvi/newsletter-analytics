@@ -158,7 +158,7 @@ function parseSrcset(srcset: string | null): SrcsetCandidate[] {
   if (!srcset) return [];
 
   return srcset
-    .split(/\s*,\s*/)
+    .split(/,\s*(?=(?:https?:)?\/\/)/i)
     .map((entry): SrcsetCandidate | null => {
       const match = entry.trim().match(/^(\S+)(?:\s+(\S+))?$/);
       if (!match) return null;
@@ -643,6 +643,17 @@ function csvCell(value: unknown): string {
   return `"${text.replaceAll('"', '""')}"`;
 }
 
+function toDownloadList(assets: ImageAsset[]): string {
+  const rows = assets.flatMap((asset) =>
+    asset.inventoryStatus === "listed" &&
+    asset.duplicateOf === null &&
+    asset.canonicalUrl
+      ? [`${asset.assetId}\t${asset.canonicalUrl}`]
+      : []
+  );
+  return `${rows.join("\n")}\n`;
+}
+
 function toCsv(assets: ImageAsset[]): string {
   const columns: Array<[string, (asset: ImageAsset) => unknown]> = [
     ["asset_id", (asset) => asset.assetId],
@@ -712,9 +723,11 @@ async function main(): Promise<void> {
   await mkdir(outputDirectory, { recursive: true });
   const jsonPath = join(outputDirectory, "manifest.json");
   const csvPath = join(outputDirectory, "manifest.csv");
+  const downloadListPath = join(outputDirectory, "download-list.tsv");
   await Promise.all([
     writeFile(jsonPath, `${JSON.stringify(manifest, null, 2)}\n`),
     writeFile(csvPath, toCsv(assets)),
+    writeFile(downloadListPath, toDownloadList(assets)),
   ]);
 
   console.log(`Scanned ${manifest.summary.postsScanned} posts`);
@@ -723,6 +736,7 @@ async function main(): Promise<void> {
   );
   console.log(`Wrote ${jsonPath}`);
   console.log(`Wrote ${csvPath}`);
+  console.log(`Wrote ${downloadListPath}`);
 }
 
 main().catch((error) => {

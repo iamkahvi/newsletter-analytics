@@ -31,6 +31,8 @@ scripts/
   analyze_markdown.ts   Structural analysis (word counts, links, images, keywords)
   analyze_natural.ts    NLP analysis (sentiment, TF-IDF, readability, bigrams)
   inventory_images.ts   List image assets referenced by exported post HTML
+  download_images.ts    Download and verify inventoried image originals
+  upload_images_to_r2.sh Upload downloaded originals to Cloudflare R2
   x.ts                  Quick topic extraction from output/combined.md
 cleanup.sh              Organize HTML into YYYY/MM/ and convert formats
 
@@ -45,6 +47,11 @@ output/                 All generated files (gitignored)
   images/
     manifest.json       Structured image inventory and summary
     manifest.csv        Flat image inventory for review
+    download-list.tsv   Unique asset IDs and highest-quality URLs
+    download-report.json  Download status, checksums, and verification
+    r2-upload-list.tsv  Asset IDs, R2 keys, and public CDN URLs
+    r2-check.txt        rclone verification results
+    assets/             Downloaded originals named by asset ID and format
   combined.md           Auto-generated combined markdown of all posts
 ```
 
@@ -92,6 +99,8 @@ bun run analyze     # Structural analysis
 bun run analyze:nlp # NLP analysis
 bun run topics      # Quick topic extraction
 bun run inventory-images # Inventory images from the Substack export
+bun run download-images  # Download and verify inventoried images
+bun run upload-images    # Upload downloaded originals to Cloudflare R2
 ```
 
 ### Individual commands
@@ -162,11 +171,33 @@ bun run scripts/x.ts
 bun run inventory-images
 ```
 
-This reads `substack_data_export/posts/*.html` and writes reviewable JSON and CSV manifests to `output/images/`. It records original and canonical URLs, every `srcset` candidate, Substack `data-attrs`, dimensions, MIME/byte metadata, classifications, and duplicate references. Custom paths are supported:
+This reads `substack_data_export/posts/*.html` and writes reviewable JSON and CSV manifests to `output/images/`, plus a headerless `download-list.tsv` containing each unique asset ID and its highest-quality URL. It records original and canonical URLs, every `srcset` candidate, Substack `data-attrs`, dimensions, MIME/byte metadata, classifications, and duplicate references. Custom paths are supported:
 
 ```sh
 bun run scripts/inventory_images.ts --input path/to/posts --output path/to/manifests
 ```
+
+**Download inventoried image originals:**
+
+```sh
+bun run download-images
+```
+
+The downloader consumes `output/images/download-list.tsv`, saves MIME-detected originals under `output/images/assets/`, and writes `output/images/download-report.json`. It uses bounded concurrency, redirects, timeouts, exponential retries, a per-image size limit, atomic file moves, SHA-256 checksums, hardlink deduplication, and resumable existing-file validation. When `manifest.json` is available, it verifies byte counts, MIME types, URL dimensions, and the largest advertised `srcset` width. Failures or verification warnings produce a non-zero exit status.
+
+Use `--help` to see path and network controls:
+
+```sh
+bun run scripts/download_images.ts --help
+```
+
+**Upload downloaded originals to Cloudflare R2:**
+
+```sh
+bun run upload-images
+```
+
+This uses the same `rclone` remote and `~/.config/immich-to-r2.env` configuration as `~/scripts/immich-to-r2.sh`. Files are copied without image processing to `${R2_BUCKET}/newsletter-assets/`, assigned an immutable one-year cache header, and verified with `rclone check`. The generated `output/images/r2-upload-list.tsv` maps asset IDs to R2 keys and public CDN URLs. `SOURCE_DIR`, `R2_PREFIX`, `UPLOAD_LIST`, and `CHECK_REPORT` can be overridden through environment variables.
 
 ## Known Issues
 
