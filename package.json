@@ -15,6 +15,7 @@
     "topics": "bun run scripts/x.ts",
     "pipeline": "bun run sync && bun run fetch && bun run convert && bun run combine && bun run analyze",
     "fetch-metadata": "bun run scripts/fetch_metadata.ts",
+    "inventory-images": "bun run scripts/inventory_images.ts",
     "deep-analyze": "bun run scripts/deep_analysis.ts",
     "site": "bun run scripts/serve.ts"
   },

@@ -30,6 +30,7 @@ scripts/
   combine_markdown.ts   Generate combined.md from markdown directory
   analyze_markdown.ts   Structural analysis (word counts, links, images, keywords)
   analyze_natural.ts    NLP analysis (sentiment, TF-IDF, readability, bigrams)
+  inventory_images.ts   List image assets referenced by exported post HTML
   x.ts                  Quick topic extraction from output/combined.md
 cleanup.sh              Organize HTML into YYYY/MM/ and convert formats
 
@@ -41,6 +42,9 @@ output/                 All generated files (gitignored)
   text/                 Plaintext versions
   wordlists/            Extracted top nouns, verbs, adjectives, topics, etc.
   archive/              Year/month archived HTML, markdown, and plaintext
+  images/
+    manifest.json       Structured image inventory and summary
+    manifest.csv        Flat image inventory for review
   combined.md           Auto-generated combined markdown of all posts
 ```
 
@@ -53,6 +57,7 @@ substack_data_export/
   posts.csv
   email_list.kahvi.csv
   posts/
+    <post_id>.<slug>.html
     <post_id>.delivers.csv
     <post_id>.opens.csv
 ```
@@ -86,6 +91,7 @@ bun run organize    # Organize into year/month folders
 bun run analyze     # Structural analysis
 bun run analyze:nlp # NLP analysis
 bun run topics      # Quick topic extraction
+bun run inventory-images # Inventory images from the Substack export
 ```
 
 ### Individual commands
@@ -148,6 +154,18 @@ bun run scripts/analyze_natural.ts output/markdown
 
 ```sh
 bun run scripts/x.ts
+```
+
+**Inventory image assets** referenced by the exported post HTML:
+
+```sh
+bun run inventory-images
+```
+
+This reads `substack_data_export/posts/*.html` and writes reviewable JSON and CSV manifests to `output/images/`. It records original and canonical URLs, every `srcset` candidate, Substack `data-attrs`, dimensions, MIME/byte metadata, classifications, and duplicate references. Custom paths are supported:
+
+```sh
+bun run scripts/inventory_images.ts --input path/to/posts --output path/to/manifests
 ```
 
 ## Known Issues
