@@ -17,7 +17,10 @@
     "fetch-metadata": "bun run scripts/fetch_metadata.ts",
     "inventory-images": "bun run scripts/inventory_images.ts",
     "download-images": "bun run scripts/download_images.ts",
+    "download-covers": "bun run scripts/download_images.ts --input output/images/cover-download-list.tsv --output output/images/covers --report output/images/cover-download-report.json && bun run convert-covers",
+    "convert-covers": "bash scripts/convert_covers_to_jpg.sh",
     "upload-images": "bash scripts/upload_images_to_r2.sh",
+    "upload-covers": "SOURCE_DIR=output/images/covers R2_PREFIX=newsletter-assets/covers UPLOAD_LIST=output/images/r2-covers-upload-list.tsv CHECK_REPORT=output/images/r2-covers-check.txt bash scripts/upload_images_to_r2.sh",
     "deep-analyze": "bun run scripts/deep_analysis.ts",
     "site": "bun run scripts/serve.ts"
   },

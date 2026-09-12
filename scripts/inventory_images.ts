@@ -11,10 +11,14 @@ import { parseArgs } from "node:util";
 
 const DEFAULT_INPUT = "substack_data_export/posts";
 const DEFAULT_OUTPUT = "output/images";
-const SCHEMA_VERSION = 1;
+const DEFAULT_ARCHIVE_API =
+  "https://www.newsletter.kahvipatel.com/api/v1/archive";
+const DEFAULT_ARCHIVE_PAGE_SIZE = 12;
+const SCHEMA_VERSION = 2;
 
 type Classification =
   | "post-content"
+  | "post-cover"
   | "tracking"
   | "avatar"
   | "publication-chrome"
@@ -53,7 +57,13 @@ interface ImageAsset {
   postId: string;
   slug: string;
   sourceFile: string;
-  elementType: "img" | "css-background" | "image-link" | "video-poster" | "svg-image";
+  elementType:
+    | "img"
+    | "css-background"
+    | "image-link"
+    | "video-poster"
+    | "svg-image"
+    | "post-cover";
   elementIndex: number;
   classification: Classification;
   classificationReason: string;
@@ -83,6 +93,9 @@ interface ImageAsset {
 
 interface ManifestSummary {
   postsScanned: number;
+  archivePostsScanned: number;
+  coverAssets: number;
+  postsWithoutCover: number;
   assetsListed: number;
   uniqueCanonicalAssets: number;
   duplicateReferences: number;
@@ -105,19 +118,43 @@ const { values } = parseArgs({
   options: {
     input: { type: "string", default: DEFAULT_INPUT },
     output: { type: "string", default: DEFAULT_OUTPUT },
+    "archive-api": { type: "string", default: DEFAULT_ARCHIVE_API },
+    "archive-page-size": {
+      type: "string",
+      default: String(DEFAULT_ARCHIVE_PAGE_SIZE),
+    },
+    "no-covers": { type: "boolean", default: false },
     help: { type: "boolean", short: "h", default: false },
   },
 });
 
 if (values.help) {
   console.log(
-    "Usage: bun run scripts/inventory_images.ts [--input <post-html-directory>] [--output <manifest-directory>]"
+    `Usage: bun run scripts/inventory_images.ts [options]
+
+Options:
+  --input <path>             Exported post HTML directory (substack_data_export/posts)
+  --output <directory>       Manifest directory (output/images)
+  --archive-api <url>        Substack archive API (${DEFAULT_ARCHIVE_API})
+  --archive-page-size <n>    Posts per archive API request (${DEFAULT_ARCHIVE_PAGE_SIZE})
+  --no-covers                Skip cover inventory from the archive API
+  -h, --help                 Show this help`
   );
   process.exit(0);
 }
 
 const inputDirectory = values.input ?? DEFAULT_INPUT;
 const outputDirectory = values.output ?? DEFAULT_OUTPUT;
+const archiveApi = values["archive-api"] ?? DEFAULT_ARCHIVE_API;
+const archivePageSize = Number(values["archive-page-size"]);
+if (
+  !Number.isInteger(archivePageSize) ||
+  archivePageSize < 1 ||
+  archivePageSize > 12
+) {
+  throw new Error("--archive-page-size must be an integer between 1 and 12");
+}
+const includeCovers = !values["no-covers"];
 
 function nullableString(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
@@ -278,6 +315,42 @@ function getHost(url: string | null): string | null {
   } catch {
     return null;
   }
+}
+
+function dimensionsFromUrl(url: string | null): {
+  width: number | null;
+  height: number | null;
+} {
+  if (!url) return { width: null, height: null };
+  try {
+    const pathname = decodeURIComponent(new URL(url).pathname);
+    const match = pathname.match(/_(\d+)x(\d+)(?:\.[^./]+)?$/i);
+    return match
+      ? { width: Number(match[1]), height: Number(match[2]) }
+      : { width: null, height: null };
+  } catch {
+    return { width: null, height: null };
+  }
+}
+
+function mimeTypeFromUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const extension = decodeURIComponent(new URL(url).pathname)
+      .split(".")
+      .pop()
+      ?.toLowerCase();
+    if (!extension) return null;
+    if (extension === "jpg" || extension === "jpeg") return "image/jpeg";
+    if (extension === "png") return "image/png";
+    if (extension === "webp") return "image/webp";
+    if (extension === "gif") return "image/gif";
+    if (extension === "heic") return "image/heic";
+    if (extension === "avif") return "image/avif";
+  } catch {
+    // Leave the MIME type unknown when the URL is malformed.
+  }
+  return null;
 }
 
 function classifyElement(
@@ -512,6 +585,93 @@ function createSimpleAsset(options: {
   };
 }
 
+interface ArchivePost {
+  id: number | string;
+  slug: string;
+  title?: string | null;
+  canonical_url?: string | null;
+  cover_image?: string | null;
+}
+
+async function fetchArchivePosts(): Promise<ArchivePost[]> {
+  const posts: ArchivePost[] = [];
+  let offset = 0;
+
+  for (;;) {
+    const url = new URL(archiveApi);
+    url.searchParams.set("sort", "new");
+    url.searchParams.set("limit", String(archivePageSize));
+    url.searchParams.set("offset", String(offset));
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Archive API returned HTTP ${response.status}: ${url}`);
+    }
+
+    const body: unknown = await response.json();
+    if (!Array.isArray(body)) {
+      throw new Error(`Archive API returned a non-array response: ${url}`);
+    }
+
+    const page = body.filter(
+      (post): post is ArchivePost =>
+        post !== null &&
+        typeof post === "object" &&
+        (typeof (post as ArchivePost).id === "string" ||
+          typeof (post as ArchivePost).id === "number") &&
+        typeof (post as ArchivePost).slug === "string"
+    );
+    posts.push(...page);
+
+    if (body.length < archivePageSize) break;
+    offset += body.length;
+  }
+
+  return posts;
+}
+
+function createCoverAsset(post: ArchivePost): ImageAsset {
+  const originalReference = nullableString(post.cover_image);
+  const canonicalUrl = directOrDecodedUrl(originalReference);
+  const dimensions = dimensionsFromUrl(canonicalUrl);
+  const postId = String(post.id);
+
+  return {
+    assetId: `${postId}-cover-001`,
+    postId,
+    slug: post.slug,
+    sourceFile: archiveApi,
+    elementType: "post-cover",
+    elementIndex: 1,
+    classification: "post-cover",
+    classificationReason: "cover_image from the Substack archive API",
+    inventoryStatus: canonicalUrl ? "listed" : "unresolved",
+    originalReference: originalReference ?? "",
+    canonicalUrl,
+    canonicalSource: "archive.cover_image",
+    host: getHost(canonicalUrl),
+    duplicateOf: null,
+    src: null,
+    srcset: null,
+    srcsetCandidates: [],
+    pictureSources: [],
+    linkedUrl: nullableString(post.canonical_url),
+    dataAttrs: null,
+    alt: null,
+    title: null,
+    declaredWidth: null,
+    declaredHeight: null,
+    metadataWidth: dimensions.width,
+    metadataHeight: dimensions.height,
+    resizeWidth: null,
+    byteEstimate: null,
+    mimeType: mimeTypeFromUrl(canonicalUrl),
+    references: originalReference
+      ? [{ source: "archive.cover_image", url: originalReference }]
+      : [],
+  };
+}
+
 async function inventoryPost(filename: string): Promise<ImageAsset[]> {
   const sourceFile = join(inputDirectory, filename);
   const html = await readFile(sourceFile, "utf8");
@@ -620,12 +780,19 @@ function countBy(
   return Object.fromEntries([...counts].sort(([a], [b]) => a.localeCompare(b)));
 }
 
-function summarize(assets: ImageAsset[], postsScanned: number): ManifestSummary {
+function summarize(
+  assets: ImageAsset[],
+  postsScanned: number,
+  archivePosts: ArchivePost[]
+): ManifestSummary {
   const canonicalUrls = new Set(
     assets.flatMap((asset) => (asset.canonicalUrl ? [asset.canonicalUrl] : []))
   );
   return {
     postsScanned,
+    archivePostsScanned: archivePosts.length,
+    coverAssets: assets.filter((asset) => asset.elementType === "post-cover").length,
+    postsWithoutCover: archivePosts.filter((post) => !post.cover_image).length,
     assetsListed: assets.length,
     uniqueCanonicalAssets: canonicalUrls.size,
     duplicateReferences: assets.filter((asset) => asset.duplicateOf !== null).length,
@@ -643,14 +810,21 @@ function csvCell(value: unknown): string {
   return `"${text.replaceAll('"', '""')}"`;
 }
 
-function toDownloadList(assets: ImageAsset[]): string {
-  const rows = assets.flatMap((asset) =>
-    asset.inventoryStatus === "listed" &&
-    asset.duplicateOf === null &&
-    asset.canonicalUrl
+function toDownloadList(
+  assets: ImageAsset[],
+  assetType: "body" | "cover"
+): string {
+  const rows = assets.flatMap((asset) => {
+    const isCover = asset.elementType === "post-cover";
+    const belongsInList = assetType === "cover" ? isCover : !isCover;
+    const isDuplicate = assetType === "cover" ? false : asset.duplicateOf !== null;
+    return belongsInList &&
+      !isDuplicate &&
+      asset.inventoryStatus === "listed" &&
+      asset.canonicalUrl
       ? [`${asset.assetId}\t${asset.canonicalUrl}`]
-      : []
-  );
+      : [];
+  });
   return `${rows.join("\n")}\n`;
 }
 
@@ -710,13 +884,22 @@ async function main(): Promise<void> {
   for (const filename of htmlFiles) {
     assets.push(...(await inventoryPost(filename)));
   }
+
+  const archivePosts = includeCovers ? await fetchArchivePosts() : [];
+  if (includeCovers) {
+    assets.push(
+      ...archivePosts
+        .filter((post) => post.cover_image)
+        .map((post) => createCoverAsset(post))
+    );
+  }
   markDuplicates(assets);
 
   const manifest: Manifest = {
     schemaVersion: SCHEMA_VERSION,
     generatedAt: new Date().toISOString(),
     inputDirectory,
-    summary: summarize(assets, htmlFiles.length),
+    summary: summarize(assets, htmlFiles.length, archivePosts),
     assets,
   };
 
@@ -724,19 +907,27 @@ async function main(): Promise<void> {
   const jsonPath = join(outputDirectory, "manifest.json");
   const csvPath = join(outputDirectory, "manifest.csv");
   const downloadListPath = join(outputDirectory, "download-list.tsv");
+  const coverDownloadListPath = join(outputDirectory, "cover-download-list.tsv");
   await Promise.all([
     writeFile(jsonPath, `${JSON.stringify(manifest, null, 2)}\n`),
     writeFile(csvPath, toCsv(assets)),
-    writeFile(downloadListPath, toDownloadList(assets)),
+    writeFile(downloadListPath, toDownloadList(assets, "body")),
+    writeFile(coverDownloadListPath, toDownloadList(assets, "cover")),
   ]);
 
-  console.log(`Scanned ${manifest.summary.postsScanned} posts`);
+  console.log(`Scanned ${manifest.summary.postsScanned} exported posts`);
+  if (includeCovers) {
+    console.log(
+      `Inventoried ${manifest.summary.coverAssets} covers from ${manifest.summary.archivePostsScanned} archive posts (${manifest.summary.postsWithoutCover} without covers)`
+    );
+  }
   console.log(
     `Listed ${manifest.summary.assetsListed} assets (${manifest.summary.uniqueCanonicalAssets} unique, ${manifest.summary.duplicateReferences} duplicate references, ${manifest.summary.unresolvedAssets} unresolved)`
   );
   console.log(`Wrote ${jsonPath}`);
   console.log(`Wrote ${csvPath}`);
   console.log(`Wrote ${downloadListPath}`);
+  console.log(`Wrote ${coverDownloadListPath}`);
 }
 
 main().catch((error) => {

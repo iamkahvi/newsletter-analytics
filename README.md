@@ -22,6 +22,7 @@ This repo archives Substack newsletter posts and runs content analysis on them. 
 
 ```
 link_list.txt           Master list of all newsletter post URLs
+post_id_mapping.csv     Archive newsletter URL to Substack post ID mapping
 package.json            Package config with script definitions
 scripts/
   sync_links.ts         Discover new posts from Substack RSS feed
@@ -30,8 +31,9 @@ scripts/
   combine_markdown.ts   Generate combined.md from markdown directory
   analyze_markdown.ts   Structural analysis (word counts, links, images, keywords)
   analyze_natural.ts    NLP analysis (sentiment, TF-IDF, readability, bigrams)
-  inventory_images.ts   List image assets referenced by exported post HTML
+  inventory_images.ts   List post-body and archive-cover image assets
   download_images.ts    Download and verify inventoried image originals
+  convert_covers_to_jpg.sh Normalize downloaded HEIC/HEIF covers to JPEG
   upload_images_to_r2.sh Upload downloaded originals to Cloudflare R2
   x.ts                  Quick topic extraction from output/combined.md
 cleanup.sh              Organize HTML into YYYY/MM/ and convert formats
@@ -47,11 +49,16 @@ output/                 All generated files (gitignored)
   images/
     manifest.json       Structured image inventory and summary
     manifest.csv        Flat image inventory for review
-    download-list.tsv   Unique asset IDs and highest-quality URLs
-    download-report.json  Download status, checksums, and verification
-    r2-upload-list.tsv  Asset IDs, R2 keys, and public CDN URLs
-    r2-check.txt        rclone verification results
-    assets/             Downloaded originals named by asset ID and format
+    download-list.tsv   Post-body asset IDs and highest-quality URLs
+    cover-download-list.tsv Cover asset IDs and highest-quality URLs
+    download-report.json  Post-body download status and verification
+    cover-download-report.json Cover download status and verification
+    r2-upload-list.tsv  Post-body asset IDs, R2 keys, and public CDN URLs
+    r2-covers-upload-list.tsv Cover asset IDs, R2 keys, and public CDN URLs
+    r2-check.txt        Post-body rclone verification results
+    r2-covers-check.txt Cover rclone verification results
+    assets/             Downloaded post-body originals named by asset ID and format
+    covers/             Downloaded cover originals named by asset ID and format
   combined.md           Auto-generated combined markdown of all posts
 ```
 
@@ -98,9 +105,11 @@ bun run organize    # Organize into year/month folders
 bun run analyze     # Structural analysis
 bun run analyze:nlp # NLP analysis
 bun run topics      # Quick topic extraction
-bun run inventory-images # Inventory images from the Substack export
-bun run download-images  # Download and verify inventoried images
-bun run upload-images    # Upload downloaded originals to Cloudflare R2
+bun run inventory-images # Inventory post-body images and archive covers
+bun run download-images  # Download and verify post-body images
+bun run download-covers  # Download covers, converting HEIC/HEIF to JPEG
+bun run upload-images    # Upload post-body originals to Cloudflare R2
+bun run upload-covers    # Upload covers to newsletter-assets/covers/
 ```
 
 ### Individual commands
@@ -165,25 +174,39 @@ bun run scripts/analyze_natural.ts output/markdown
 bun run scripts/x.ts
 ```
 
-**Inventory image assets** referenced by the exported post HTML:
+**Inventory post-body image assets and archive covers:**
 
 ```sh
 bun run inventory-images
 ```
 
-This reads `substack_data_export/posts/*.html` and writes reviewable JSON and CSV manifests to `output/images/`, plus a headerless `download-list.tsv` containing each unique asset ID and its highest-quality URL. It records original and canonical URLs, every `srcset` candidate, Substack `data-attrs`, dimensions, MIME/byte metadata, classifications, and duplicate references. Custom paths are supported:
+This reads `substack_data_export/posts/*.html` and paginates the public Substack archive API to inventory both post-body images and each post's `cover_image`. It writes reviewable JSON and CSV manifests to `output/images/`, plus separate headerless download lists for post-body assets and covers. Cover assets are classified as `post-cover`; covers that are also present in a post body are recorded as duplicate references in the manifest, while the cover download list retains them so every cover gets its own file under `output/images/covers/`. It records original and canonical URLs, every `srcset` candidate, Substack `data-attrs`, dimensions, MIME/byte metadata, classifications, and duplicate references. Custom paths and cover behavior are supported:
+
+```sh
+bun run scripts/inventory_images.ts --help
+```
+
+To inventory only the exported post HTML without making archive API requests, pass `--no-covers`. The archive endpoint and page size can be overridden with `--archive-api` and `--archive-page-size`.
 
 ```sh
 bun run scripts/inventory_images.ts --input path/to/posts --output path/to/manifests
 ```
 
-**Download inventoried image originals:**
+**Download inventoried post-body image originals:**
 
 ```sh
 bun run download-images
 ```
 
-The downloader consumes `output/images/download-list.tsv`, saves MIME-detected originals under `output/images/assets/`, and writes `output/images/download-report.json`. It uses bounded concurrency, redirects, timeouts, exponential retries, a per-image size limit, atomic file moves, SHA-256 checksums, hardlink deduplication, and resumable existing-file validation. When `manifest.json` is available, it verifies byte counts, MIME types, URL dimensions, and the largest advertised `srcset` width. Failures or verification warnings produce a non-zero exit status.
+The downloader consumes `output/images/download-list.tsv`, saves MIME-detected post-body originals under `output/images/assets/`, and writes `output/images/download-report.json`.
+
+**Download archive-cover originals:**
+
+```sh
+bun run download-covers
+```
+
+This consumes `output/images/cover-download-list.tsv`, saves covers under `output/images/covers/`, converts any downloaded HEIC/HEIF covers to JPEG, and writes `output/images/cover-download-report.json`. The standalone conversion command is also available as `bun run convert-covers`. The downloader uses bounded concurrency, redirects, timeouts, exponential retries, a per-image size limit, atomic file moves, SHA-256 checksums, hardlink deduplication, and resumable existing-file validation. When `manifest.json` is available, it verifies byte counts, MIME types, URL dimensions, and the largest advertised `srcset` width. Failures or verification warnings produce a non-zero exit status.
 
 Use `--help` to see path and network controls:
 
@@ -191,13 +214,21 @@ Use `--help` to see path and network controls:
 bun run scripts/download_images.ts --help
 ```
 
-**Upload downloaded originals to Cloudflare R2:**
+**Upload downloaded post-body originals to Cloudflare R2:**
 
 ```sh
 bun run upload-images
 ```
 
-This uses the same `rclone` remote and `~/.config/immich-to-r2.env` configuration as `~/scripts/immich-to-r2.sh`. Files are copied without image processing to `${R2_BUCKET}/newsletter-assets/`, assigned an immutable one-year cache header, and verified with `rclone check`. The generated `output/images/r2-upload-list.tsv` maps asset IDs to R2 keys and public CDN URLs. `SOURCE_DIR`, `R2_PREFIX`, `UPLOAD_LIST`, and `CHECK_REPORT` can be overridden through environment variables.
+This uses the same `rclone` remote and `~/.config/immich-to-r2.env` configuration as `~/scripts/immich-to-r2.sh`. Post-body files are copied without image processing to `${R2_BUCKET}/newsletter-assets/`, assigned an immutable one-year cache header, and verified with `rclone check`. The generated `output/images/r2-upload-list.tsv` maps asset IDs to R2 keys and public CDN URLs. `SOURCE_DIR`, `R2_PREFIX`, `UPLOAD_LIST`, and `CHECK_REPORT` can be overridden through environment variables.
+
+**Upload downloaded covers to Cloudflare R2:**
+
+```sh
+bun run upload-covers
+```
+
+This uploads `output/images/covers/` to `${R2_BUCKET}/newsletter-assets/covers/` and writes the cover-specific upload list and verification report to `output/images/r2-covers-upload-list.tsv` and `output/images/r2-covers-check.txt`.
 
 ## Known Issues
 
